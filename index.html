@@ -3,258 +3,137 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Título cambiado -->
-    <title>¡Fin del Mundo!</title>
+    <title>¿Pesimista o Realista?</title>
     <!-- Carga de Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Carga de la nueva fuente (Poppins) -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
-    
-    <!-- Estilos actualizados -->
     <style>
+        /* Estilos personalizados para el juego */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
         body {
-            /* Fuente base cambiada a Poppins */
-            font-family: 'Poppins', sans-serif;
-            /* Mismo fondo de gradiente */
-            background-color: #0f0c29;
-            background-image: linear-gradient(135deg, #302364, #1f1a3a, #0f0c29);
+            font-family: 'Inter', sans-serif;
         }
-        /* Clase para los nuevos títulos (Poppins Bold) */
-        .font-title {
-            font-family: 'Poppins', sans-serif;
-            font-weight: 800;
-            letter-spacing: 0.05em;
-            text-transform: uppercase;
-        }
-        /* Clase para las tarjetas con efecto cristal */
-        .card {
-            background-color: rgba(23, 27, 41, 0.7); /* bg-gray-800/70 */
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 0.75rem; /* rounded-xl */
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-        }
-        /* Ocultar pantallas */
-        .hidden {
+        .screen {
             display: none;
         }
-        /* Spinner */
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+        .screen.active {
+            display: block;
         }
-        .spinner {
-            border: 4px solid rgba(255, 255, 255, 0.3);
-            border-top-color: #fff;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
+        /* Animación de entrada */
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
         }
-        /* Temporizador con nueva fuente (Poppins Bold) */
-        .timer {
-            font-family: 'Poppins', sans-serif;
-            font-weight: 800;
-            font-size: 4rem;
-            line-height: 1;
-            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-        /* Animación para botones */
-        .btn {
-            transition: transform 0.15s ease-out, background-color 0.2s;
+        /* Estilo para jugadores eliminados */
+        .player-item.eliminated {
+            text-decoration: line-through;
+            opacity: 0.5;
         }
-        .btn:hover {
-            transform: scale(1.03);
-        }
-        .btn:active {
-            transform: scale(0.98);
-        }
-        /* Animación de pulso para puntuaciones */
-        .score-pulse {
-            animation: pulse-light 1.5s infinite;
-        }
-        @keyframes pulse-light {
-            0%, 100% { opacity: 1; text-shadow: 0 0 5px currentColor; }
-            50% { opacity: 0.8; text-shadow: 0 0 15px currentColor; }
+        /* Indicador de voto */
+        .player-item.voted::after {
+            content: '✓';
+            color: #10b981; /* Verde de Tailwind */
+            font-weight: bold;
+            margin-left: 8px;
         }
     </style>
 </head>
-<body class="text-white h-screen flex items-center justify-center overflow-hidden p-4">
+<body class="bg-gray-900 text-white min-h-screen flex items-center justify-center p-4">
 
-    <!-- Pantalla de Carga Inicial -->
-    <div id="screen-loading" class="text-center">
-        <div class="spinner mx-auto mb-4"></div>
-        <p class="text-xl">Conectando...</p>
-    </div>
+    <!-- Contenedor principal del juego -->
+    <div id="app-container" class="w-full max-w-lg mx-auto bg-gray-800 rounded-xl shadow-2xl p-6 md:p-8">
 
-    <!-- Div para Mensajes de Error -->
-    <div id="error-message" class="hidden fixed top-5 right-5 bg-red-600 text-white p-4 rounded-lg shadow-lg z-50">
-        <span id="error-text" class="font-bold"></span>
-    </div>
+        <!-- 1. Pantalla de Unirse (Join Screen) -->
+        <div id="join-screen" class="screen active fade-in">
+            <h1 class="text-3xl md:text-4xl font-black text-center mb-6">¿Pesimista o Realista?</h1>
+            <p class="text-center text-gray-400 mb-8">Un juego de supervivencia social.</p>
+            <div class="space-y-4">
+                <input type="text" id="player-name" placeholder="Tu nombre" class="w-full p-3 bg-gray-700 text-white rounded-lg border border-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500" maxlength="15">
+                <input type="text" id="game-id-input" placeholder="ID del Juego (para unirte)" class="w-full p-3 bg-gray-700 text-white rounded-lg border border-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500" maxlength="5">
+                <button id="join-button" class="w-full p-3 bg-purple-600 hover:bg-purple-700 rounded-lg font-bold text-lg transition-colors shadow-lg">Unirse al Juego</button>
+                <button id="host-button" class="w-full p-3 bg-green-600 hover:bg-green-700 rounded-lg font-bold text-lg transition-colors shadow-lg">Crear Juego Nuevo</button>
+            </div>
+            <p id="join-error" class="text-red-400 text-center mt-4"></p>
+        </div>
 
-    <!-- Pantalla de Unirse/Crear Partida -->
-    <div id="screen-join" class="hidden w-full max-w-md p-8 card">
-        <!-- Título y color cambiados -->
-        <h1 class="font-title text-5xl text-lime-400 mb-6 text-center">¡Fin del Mundo!</h1>
-        <p class="text-gray-300 mb-8 text-center text-lg">El Apocalipsis es más divertido con amigos.</p>
-        <div class="mb-4">
-            <label for="name-input" class="block text-sm font-medium text-gray-300 mb-2">Tu Apodo</label>
-            <input type="text" id="name-input" class="w-full px-4 py-3 bg-gray-900/50 border border-gray-700 rounded-lg text-white text-lg focus:outline-none focus:ring-2 focus:ring-cyan-500" placeholder="Sobreviviente1">
+        <!-- 2. Pantalla de Espera (Lobby Screen) -->
+        <div id="lobby-screen" class="screen">
+            <h2 class="text-2xl font-bold text-center mb-4">Sala de Espera</h2>
+            <div class="bg-gray-700 p-4 rounded-lg text-center mb-6">
+                <p class="text-gray-400">Comparte este ID con tus amigos:</p>
+                <span id="game-id-display" class="text-3xl font-black text-purple-300 tracking-widest">...</span>
+            </div>
+            <h3 class="font-bold text-lg mb-2">Jugadores Conectados:</h3>
+            <ul id="lobby-player-list" class="bg-gray-700 rounded-lg p-4 space-y-2 min-h-[100px]">
+                <!-- Jugadores se añadirán aquí dinámicamente -->
+            </ul>
+            <button id="start-button" class="w-full p-3 bg-green-600 hover:bg-green-700 rounded-lg font-bold text-lg transition-colors mt-6 shadow-lg">Empezar Juego</button>
         </div>
-        <div class="mb-6">
-            <label for="lobby-code-input" class="block text-sm font-medium text-gray-300 mb-2">Código de la Sala</label>
-            <input type="text" id="lobby-code-input" maxlength="4" class="w-full px-4 py-3 bg-gray-900/50 border border-gray-700 rounded-lg text-white uppercase text-center text-2xl tracking-widest font-bold focus:outline-none focus:ring-2 focus:ring-cyan-500" placeholder="ABCD">
-        </div>
-        <!-- Texto de botones cambiado -->
-        <button id="btn-join-lobby" class="btn w-full bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-3 px-6 rounded-lg mb-3 text-lg">Unirse al Apocalipsis</button>
-        <button id="btn-create-lobby" class="btn w-full bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 px-6 rounded-lg text-lg">Crear Nuevo Apocalipsis</button>
-    </div>
 
-    <!-- Pantalla de Lobby (Sala de Espera) -->
-    <div id="screen-lobby" class="hidden w-full max-w-lg p-8 card text-center">
-        <h2 class="font-title text-4xl text-lime-400 mb-4">Sala de Espera</h2>
-        <p class="text-gray-400 mb-6">Comparte este código con tus amigos:</p>
-        <div class="bg-gray-900/50 border-2 border-dashed border-gray-700 rounded-lg p-4 mb-6">
-            <span id="lobby-code-display" class="font-title text-6xl font-extrabold tracking-widest text-lime-400"></span>
-        </div>
-        <h3 class="text-xl font-bold mb-4">Jugadores Listos:</h3>
-        <div id="player-list" class="grid grid-cols-2 gap-4 mb-8 min-h-[100px]">
-            <!-- Los jugadores se listarán aquí -->
-        </div>
-        <button id="btn-start-game" class="hidden btn w-full bg-red-600 hover:bg-red-500 text-white font-bold py-3 px-6 rounded-lg text-xl uppercase">
-            ¡Empezar!
-        </Cbutton>
-        <p id="start-game-warning" class="hidden mt-4 text-yellow-400 font-semibold">Necesitas un número par de jugadores (mín. 2).</p>
-    </div>
-
-    <!-- Pantalla de Asignación de Roles -->
-    <div id="screen-roles" class="hidden text-center p-8">
-        <div class="card p-10 max-w-lg mx-auto">
-            <p class="text-xl text-gray-300 mb-2">Tu compi de equipo es:</p>
-            <h2 id="partner-name" class="font-title text-5xl text-cyan-400 mb-8"></h2>
-            
-            <p class="text-xl text-gray-300 mb-2">Tu rol esta ronda:</p>
-            <!-- El texto se asignará desde JS (¡EL PEOR FINAL! / ¡EL ARREGLO!) -->
-            <h1 id="role-name" class="font-title text-7xl font-extrabold text-red-500"></h1>
-            
-            <p class="text-gray-400 mt-8 text-lg">Prepárate...</p>
-        </div>
-        <!-- Botón solo para el host -->
-        <button id="btn-start-round" class="hidden btn mt-8 bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-3 px-6 rounded-lg text-xl uppercase">
-            Comenzar Ronda
-        </button>
-    </div>
-
-    <!-- Pantalla de Escritura (Apocalíptico) -->
-    <div id="screen-writing-apocalyptic" class="hidden w-full max-w-2xl p-8 card">
-        <div class="text-center mb-6">
-            <!-- Título de rol cambiado -->
-            <span class="font-title text-red-500 text-4xl">ROL: ¡EL PEOR FINAL! ☠️</span>
-            <p class="text-gray-300 text-lg mt-2">¡Inventa el peor desastre posible!</p>
-        </div>
-        <div id="timer-apocalyptic" class="timer text-center text-red-500 mb-6">30</div>
-        <div class="bg-gray-900/50 p-6 rounded-lg shadow-inner mb-6">
-            <p class="text-gray-400 mb-2 uppercase text-sm font-bold tracking-wider">Escenario:</p>
-            <h3 id="scenario-text-apocalyptic" class="text-2xl font-semibold"></h3>
-        </div>
-        <textarea id="apocalyptic-textarea" class="w-full h-40 px-4 py-3 bg-gray-900/50 border border-gray-700 rounded-lg text-white text-base focus:outline-none focus:ring-2 focus:ring-red-500" placeholder="El mundo se acaba porque..."></textarea>
-        <!-- Botón cambiado -->
-        <button id="btn-submit-apocalyptic" class="btn w-full mt-4 bg-red-600 hover:bg-red-500 text-white font-bold py-3 px-6 rounded-lg text-xl uppercase">¡Lanzar Desastre! 💥</button>
-    </div>
-
-    <!-- Pantalla de Escritura (Realista) -->
-    <div id="screen-writing-realist" class="hidden w-full max-w-2xl p-8 card">
-        <div class="text-center mb-6">
-            <!-- Título de rol cambiado -->
-            <span class="font-title text-cyan-500 text-4xl">ROL: ¡EL ARREGLO! 🔧</span>
-            <p class="text-gray-300 text-lg mt-2">Tu compi se ha pasado. ¡Arréglalo!</p>
-        </div>
-        <div id="timer-realist" class="timer text-center text-cyan-500 mb-6">30</div>
-        <div class="bg-gray-900/50 p-6 rounded-lg shadow-inner mb-6">
-            <p class="text-gray-400 mb-2 uppercase text-sm font-bold tracking-wider">Escenario:</p>
-            <h3 id="scenario-text-realist" class="text-xl font-semibold mb-4"></h3>
-            <hr class="border-gray-700 my-4">
-            <!-- Título de predicción cambiado -->
-            <p class="text-red-400 mb-2 uppercase text-sm font-bold tracking-wider">La predicción del "Peor Final":</p>
-            <blockquote id="apocalyptic-response-text" class="text-lg italic text-white border-l-4 border-red-500 pl-4"></blockquote>
-        </div>
-        <textarea id="realist-textarea" class="w-full h-40 px-4 py-3 bg-gray-900/50 border border-gray-700 rounded-lg text-white text-base focus:outline-none focus:ring-2 focus:ring-cyan-500" placeholder="Bueno, no es para tanto, en realidad..."></textarea>
-        <!-- Botón cambiado -->
-        <button id="btn-submit-realist" class="btn w-full mt-4 bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-3 px-6 rounded-lg text-xl uppercase">¡Salvar el Día! 🦸</button>
-    </div>
-
-    <!-- Pantalla de Espera (para jugadores que no escriben o ya terminaron) -->
-    <div id="screen-waiting" class="hidden text-center p-8">
-        <div class="spinner mx-auto mb-6"></div>
-        <h2 class="font-title text-4xl mb-4">Procesando respuestas...</h2>
-        <p id="waiting-text" class="text-xl text-gray-300"></p>
-    </div>
-
-    <!-- Pantalla de Votación -->
-    <div id="screen-voting" class="hidden w-full max-w-4xl p-8 card">
-        <h2 class="font-title text-5xl text-lime-400 text-center mb-2">Votación</h2>
-        <p class="text-gray-300 text-center text-lg mb-6">¡Vota por tus favoritos! (No por tu equipo, obvio)</p>
-        <div id="timer-voting" class="timer text-center text-lime-400 mb-6">60</div>
-        
-        <div id="voting-options-container" class="space-y-6 max-h-[60vh] overflow-y-auto p-2 rounded-lg bg-black/20">
-            <!-- Las opciones de votación se generarán aquí (con botones actualizados) -->
-        </div>
-    </div>
-
-    <!-- Pantalla de Puntuaciones -->
-    <div id="screen-scores" class="hidden w-full max-w-2xl p-8 text-center">
-        <div class="card p-8">
-            <h2 class="font-title text-6xl text-lime-400 mb-8">¡Resultados de la Ronda!</h2>
-            
-            <!-- CONTENIDO CAMBIADO: Ganadores de la Ronda -->
-            <h3 class="font-title text-3xl text-cyan-400 mb-3">Ganadores de la Ronda</h3>
-            <div id="round-scores-list" class="space-y-4 mb-8 text-left">
-                <!-- Los ganadores de la ronda se mostrarán aquí -->
+        <!-- 3. Pantalla de Juego (Game Screen) -->
+        <div id="game-screen" class="screen">
+            <div id="round-info" class="text-center mb-4">
+                <span class="text-xl font-bold text-purple-300">Ronda <span id="round-number">1</span></span>
+                <div class="w-full bg-gray-600 rounded-full h-2.5 mt-2">
+                    <div id="timer-bar" class="bg-purple-600 h-2.5 rounded-full transition-all duration-1000 linear"></div>
+                </div>
             </div>
 
-            <hr class="border-gray-700 my-8">
+            <!-- Contenedor de la Frase -->
+            <div id="phrase-container" class="bg-gray-700 p-6 rounded-lg min-h-[150px] flex items-center justify-center text-center mb-6 shadow-inner">
+                <p id="phrase-text" class="text-xl md:text-2xl font-medium">...</p>
+            </div>
 
-            <!-- CONTENIDO CAMBIADO: Leaderboard -->
-            <h3 class="font-title text-3xl text-cyan-400 mb-3">Leaderboard</h3>
-            <div id="total-scores-list" class="space-y-3">
-                <!-- Puntuaciones totales con medallas -->
+            <!-- Contenedor de Votación -->
+            <div id="vote-container">
+                <p class="text-center text-gray-400 mb-4">¿Qué es esta frase?</p>
+                <div class="grid grid-cols-2 gap-4">
+                    <button id="pessimist-button" class="p-4 bg-red-600 hover:bg-red-700 rounded-lg font-bold text-2xl transition-colors shadow-lg focus:outline-none focus:ring-2 focus:ring-red-400">Pesimista</button>
+                    <button id="realist-button" class="p-4 bg-blue-600 hover:bg-blue-700 rounded-lg font-bold text-2xl transition-colors shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-400">Realista</button>
+                </div>
+            </div>
+
+            <!-- Contenedor de Espera -->
+            <div id="wait-container" class="text-center p-6 bg-gray-700 rounded-lg" style="display: none;">
+                <p class="text-xl text-gray-400">¡Voto registrado! Esperando a los demás...</p>
             </div>
         </div>
-        
-        <button id="btn-next-round" class="hidden btn mt-8 bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-3 px-6 rounded-lg text-xl uppercase">
-            Siguiente Ronda
-        </button>
-        <button id="btn-end-game" class="hidden btn mt-8 bg-red-600 hover:bg-red-500 text-white font-bold py-3 px-6 rounded-lg text-xl uppercase">
-            Terminar Partida
-        </button>
-    </div>
 
-    <!-- Pantalla de Fin de Partida -->
-    <div id="screen-game-over" class="hidden w-full max-w-2xl p-8 text-center">
-        <div class="card p-8">
-            <h2 class="font-title text-5xl text-lime-400 mb-6">¡El Juego ha Terminado!</h2>
-            <h3 class="text-2xl font-semibold text-gray-300 mb-4">¡Los Supervivientes Definitivos!</h3>
-            <h1 id="winner-team-name" class="font-title text-6xl text-cyan-400 mb-8 score-pulse"></h1>
-            
-            <h3 class="font-title text-3xl text-gray-400 mb-4">Marcador Final</h3>
-            <div id="final-scores-list" class="space-y-3">
-                <!-- Puntuaciones finales con medallas -->
-            </div>
+        <!-- 4. Pantalla de Resultados de Ronda -->
+        <div id="results-screen" class="screen text-center">
+            <h2 class="text-2xl font-bold mb-4">Resultados de la Ronda</h2>
+            <p class="text-lg mb-2">La respuesta correcta era:</p>
+            <span id="correct-answer" class="text-3xl font-black uppercase mb-6 block">...</span>
+            <p id="elimination-info" class="text-xl text-red-400 font-bold mb-4">...</p>
+            <p class="text-gray-400">Siguiente ronda en <span id="next-round-timer">5</span>...</p>
         </div>
-        <button id="btn-play-again" class="hidden btn mt-8 bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-3 px-6 rounded-lg text-xl uppercase">
-            Jugar Otra Vez
-        </button>
+
+        <!-- 5. Pantalla de Fin de Juego -->
+        <div id="game-over-screen" class="screen text-center">
+            <h2 class="text-4xl font-black mb-6">¡Juego Terminado!</h2>
+            <p id="winner-info" class="text-2xl text-green-400 mb-8">...</p>
+            <button id="play-again-button" class="w-full p-3 bg-purple-600 hover:bg-purple-700 rounded-lg font-bold text-lg transition-colors mt-6 shadow-lg">Jugar de Nuevo</button>
+        </div>
+
+        <!-- Lista de Jugadores (Visible siempre durante el juego) -->
+        <div id="player-list-container" class="mt-6" style="display: none;">
+            <h3 class="font-bold text-sm text-gray-400 mb-2 text-center uppercase tracking-wider">Jugadores</h3>
+            <ul id="game-player-list" class="flex flex-wrap justify-center gap-2">
+                <!-- Ejemplo: <li class="player-item bg-gray-700 p-2 px-3 rounded-full text-sm">Jugador 1</li> -->
+            </ul>
+        </div>
     </div>
 
-
-    <!-- Script de Firebase y Lógica del Juego -->
+    <!-- Script de Firebase -->
     <script type="module">
-        // Importar funciones de Firebase
-        import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getDatabase, ref, set, get, onValue, off, onDisconnect, runTransaction, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
+        // Importaciones de Firebase v9+
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
+        // SE HAN ELIMINADO LAS IMPORTACIONES DE AUTH
+        import { getDatabase, ref, set, get, onValue, update, remove } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
 
-        // --- CONFIGURACIÓN DE FIREBASE (PROVISTA POR EL USUARIO) ---
+        // CONFIGURACIÓN DE FIREBASE (proporcionada por el usuario)
         const firebaseConfig = {
             apiKey: "AIzaSyDrYwIMyL2y7yHXxQF4yjtokPOE2QyHC5I",
             authDomain: "pesimism-2fdad.firebaseapp.com",
@@ -265,940 +144,469 @@
             appId: "1:859660712236:web:e09ac663d189f550d2d489",
             measurementId: "G-TYE4V0P8XB"
         };
-        // ---------------------------------------------------------
 
-        // --- VARIABLES GLOBALES DEL JUEGO ---
-        let app, db;
-        let currentUserId = null;
-        let currentLobbyCode = null;
+        // BASE DE DATOS DE FRASES
+        const PHRASE_LIST = [
+            { text: "Todo va a salir mal.", type: "pesimista" },
+            { text: "No tiene sentido intentarlo, fracasaré de todos modos.", type: "pesimista" },
+            { text: "A veces las cosas no salen como planeas.", type: "realista" },
+            { text: "El éxito requiere esfuerzo y asumir la posibilidad de fallar.", type: "realista" },
+            { text: "Nunca se puede confiar en nadie.", type: "pesimista" },
+            { text: "Es prudente ser cauteloso con en quién confías plenamente.", type: "realista" },
+            { text: "La felicidad es solo una ilusión temporal.", type: "pesimista" },
+            { text: "La felicidad es un estado emocional que fluctúa.", type: "realista" },
+            { text: "El futuro es incierto y probablemente peor.", type: "pesimista" },
+            { text: "El futuro es incierto y no se puede predecir.", type: "realista" },
+            { text: "Da igual lo que hagas, el resultado será el mismo.", type: "pesimista" },
+            { text: "No siempre puedes controlar el resultado, solo tu esfuerzo.", type: "realista" },
+            { text: "La mayoría de la gente solo se preocupa por sí misma.", type: "realista" }, // Ambiguo
+            { text: "Todo el mundo es fundamentalmente egoísta.", type: "pesimista" },
+            { text: "No hay nada bueno en el mundo.", type: "pesimista" },
+            { text: "El mundo tiene problemas significativos que deben abordarse.", type: "realista" },
+            { text: "Siempre acabarás solo.", type: "pesimista" },
+            { text: "Las relaciones requieren trabajo y no todas duran para siempre.", type: "realista" },
+            { text: "Planificar es inútil porque todo se tuerce.", type: "pesimista" },
+            { text: "Los planes deben ser flexibles para adaptarse a imprevistos.", type: "realista" }
+        ];
+
+        // Inicializar Firebase
+        const app = initializeApp(firebaseConfig);
+        // SE HA ELIMINADO LA INICIALIZACIÓN DE AUTH
+        const db = getDatabase(app);
+
+        // --- MANEJO DE ID DE USUARIO LOCAL ---
+        // Se crea un ID local si no existe en la sesión
+        function getOrCreateLocalUserId() {
+            let uid = sessionStorage.getItem('pesimistaGameUserId');
+            if (!uid) {
+                uid = Math.random().toString(36).substring(2, 12); // Un ID aleatorio simple
+                sessionStorage.setItem('pesimistaGameUserId', uid);
+            }
+            return uid;
+        }
+
+        // Variables de estado del juego
+        let localUserId = getOrCreateLocalUserId(); // ID de usuario local en lugar de currentUser
+        let currentGameId = null;
         let isHost = false;
-        let localGameState = {};
-        let currentLobbyListener = null;
-        let currentTimer = null; // Temporizador visual (setInterval)
-        let hostStateTimer = null; // Temporizador maestro del Host (setTimeout)
-        let myTeamId = null;
-        let pendingPessimistVote = false;
-        let pendingModeratorVote = false;
+        let localGameState = null;
+        let gameTimerInterval = null;
+        const ROUND_TIME = 15; // segundos
+        const RESULTS_TIME = 5; // segundos
 
-        // --- Carga de escenarios desde JSON ---
-        const SCENARIOS_URL = "https://logise1.github.io/pessimism/escenarios.json";
-        
-        let allScenarios = []; // Aquí guardaremos los escenarios cargados
-
-        // --- ELEMENTOS DEL DOM ---
+        // Referencias a elementos del DOM
         const screens = {
-            loading: document.getElementById('screen-loading'),
-            join: document.getElementById('screen-join'),
-            lobby: document.getElementById('screen-lobby'),
-            roles: document.getElementById('screen-roles'),
-            writingApocalyptic: document.getElementById('screen-writing-apocalyptic'),
-            writingRealist: document.getElementById('screen-writing-realist'),
-            waiting: document.getElementById('screen-waiting'),
-            voting: document.getElementById('screen-voting'),
-            scores: document.getElementById('screen-scores'),
-            gameOver: document.getElementById('screen-game-over'),
+            join: document.getElementById('join-screen'),
+            lobby: document.getElementById('lobby-screen'),
+            game: document.getElementById('game-screen'),
+            results: document.getElementById('results-screen'),
+            gameOver: document.getElementById('game-over-screen')
         };
-        const errorMessageDiv = document.getElementById('error-message');
-        const errorText = document.getElementById('error-text');
-        
-        const nameInput = document.getElementById('name-input');
-        const lobbyCodeInput = document.getElementById('lobby-code-input');
-        const btnJoinLobby = document.getElementById('btn-join-lobby');
-        const btnCreateLobby = document.getElementById('btn-create-lobby');
-        
-        const lobbyCodeDisplay = document.getElementById('lobby-code-display');
-        const playerList = document.getElementById('player-list');
-        const btnStartGame = document.getElementById('btn-start-game');
-        const startGameWarning = document.getElementById('start-game-warning');
+        const playerNameInput = document.getElementById('player-name');
+        const gameIdInput = document.getElementById('game-id-input');
+        const joinButton = document.getElementById('join-button');
+        const hostButton = document.getElementById('host-button');
+        const joinError = document.getElementById('join-error');
+        const gameIdDisplay = document.getElementById('game-id-display');
+        const lobbyPlayerList = document.getElementById('lobby-player-list');
+        const startButton = document.getElementById('start-button');
+        const playerListContainer = document.getElementById('player-list-container');
+        const gamePlayerList = document.getElementById('game-player-list');
+        const roundNumber = document.getElementById('round-number');
+        const timerBar = document.getElementById('timer-bar');
+        const phraseText = document.getElementById('phrase-text');
+        const voteContainer = document.getElementById('vote-container');
+        const waitContainer = document.getElementById('wait-container');
+        const pessimistButton = document.getElementById('pessimist-button');
+        const realistButton = document.getElementById('realist-button');
+        const correctAnswer = document.getElementById('correct-answer');
+        const eliminationInfo = document.getElementById('elimination-info');
+        const nextRoundTimer = document.getElementById('next-round-timer');
+        const winnerInfo = document.getElementById('winner-info');
+        const playAgainButton = document.getElementById('play-again-button');
 
-        // --- INICIALIZACIÓN DE FIREBASE ---
-        
-        window.onload = async () => {
-            try {
-                const existingApp = getApps().find(app => app.name === '[DEFAULT]');
-                if (existingApp) {
-                    app = existingApp;
-                } else {
-                    app = initializeApp(firebaseConfig);
-                }
-                db = getDatabase(app);
+        // --- AUTENTICACIÓN ---
+        // SE HA ELIMINADO TODA LA LÓGICA DE AUTH (signInAnonymously, onAuthStateChanged)
 
-                currentUserId = 'user_' + Math.random().toString(36).substring(2, 9);
-                console.log("Usuario local (sin auth):", currentUserId);
-                
-                await loadScenarios();
-                
-                showScreen('join');
+        // --- NAVEGACIÓN DE PANTALLAS ---
 
-            } catch (err) {
-                console.error("Error en la inicialización:", err);
-                handleError(err);
-                showScreen('join');
+        function showScreen(screenName) {
+            Object.values(screens).forEach(screen => screen.classList.remove('active'));
+            if (screens[screenName]) {
+                screens[screenName].classList.add('active');
             }
-        };
-
-        async function loadScenarios() {
-            console.log("Cargando escenarios desde:", SCENARIOS_URL);
-            try {
-                const response = await fetch(SCENARIOS_URL);
-                if (!response.ok) {
-                    throw new Error(`Error al cargar escenarios: ${response.statusText}`);
-                }
-                allScenarios = await response.json();
-                if (!Array.isArray(allScenarios) || allScenarios.length === 0) {
-                    throw new Error("El JSON de escenarios está vacío o no es un array.");
-                }
-                console.log(`Cargados ${allScenarios.length} escenarios.`);
-            } catch (err) {
-                console.error(err);
-                handleError({ message: "No se pudieron cargar historias. Usando historias de emergencia." }, false);
-                // Fallback por si falla el fetch
-                allScenarios = [
-                    "Abres TikTok y todos los vídeos son de tus padres bailando.",
-                    "Tu sombra empieza a hablarte.",
-                    "Te despiertas y eres un caracol.",
-                    "El 'lag' de tu videojuego se traslada a la vida real.",
-                    "Recibes 999+ notificaciones en tu móvil."
-                ];
-            }
-        }
-
-        // --- MANEJO DE PANTALLAS Y ERRORES ---
-
-        function showScreen(screenId) {
-            Object.values(screens).forEach(screen => screen.classList.add('hidden'));
-            if (screens[screenId]) {
-                screens[screenId].classList.remove('hidden');
+            // Mostrar lista de jugadores persistente durante el juego
+            if (['game', 'results', 'gameOver'].includes(screenName)) {
+                playerListContainer.style.display = 'block';
             } else {
-                console.error("No se encontró la pantalla:", screenId);
+                playerListContainer.style.display = 'none';
             }
         }
 
-        function handleError(error, autoDismiss = true) {
-            console.error("Error:", error);
-            errorText.textContent = `Error: ${error.message || error}`;
-            errorMessageDiv.classList.remove('hidden');
-            if (autoDismiss) {
-                setTimeout(() => {
-                    errorMessageDiv.classList.add('hidden');
-                }, 5000);
-            }
-        }
+        // --- LÓGICA DE UNIRSE Y CREAR JUEGO ---
 
-        // --- LÓGICA DE LOBBY ---
-
-        btnCreateLobby.addEventListener('click', () => {
-            const playerName = nameInput.value.trim();
-            if (!playerName) {
-                handleError({ message: "Por favor, introduce tu apodo." });
-                return;
-            }
-            if (!currentUserId) { 
-                handleError({ message: "No se pudo generar un ID de usuario." });
+        hostButton.onclick = async () => {
+            // El host ya no necesita nombre, solo crea la partida.
+            if (!localUserId) {
+                joinError.textContent = "Error de autenticación. Inténtalo de nuevo.";
                 return;
             }
 
             isHost = true;
-            console.log("Este cliente ES el host.");
-            currentLobbyCode = generateLobbyCode(4);
-            const lobbyRef = ref(db, `games/${currentLobbyCode}`);
-            const newGame = {
-                host: currentUserId,
-                gameState: "LOBBY",
-                createdAt: serverTimestamp(),
-                players: {
-                    [currentUserId]: { name: playerName }
-                },
-                currentRound: 0,
-                scenarios: shuffleArray([...allScenarios])
+            currentGameId = Math.random().toString(36).substring(2, 7).toUpperCase();
+            
+            const gameRef = ref(db, `games/${currentGameId}`);
+            
+            const initialGameState = {
+                status: 'lobby',
+                hostId: localUserId, // Se usa localUserId
+                players: {} // El host no es un jugador, la lista empieza vacía.
             };
+            
+            await set(gameRef, initialGameState);
+            listenToGame(currentGameId);
+        };
 
-            set(lobbyRef, newGame)
-                .then(() => joinLobby(currentLobbyCode))
-                .catch(handleError);
-        });
+        joinButton.onclick = async () => {
+            const name = playerNameInput.value.trim();
+            const gameId = gameIdInput.value.trim().toUpperCase();
 
-        btnJoinLobby.addEventListener('click', () => {
-            const playerName = nameInput.value.trim();
-            const lobbyCode = lobbyCodeInput.value.trim().toUpperCase();
-
-            if (!playerName) {
-                handleError({ message: "Por favor, introduce tu apodo." });
+            if (!name) {
+                joinError.textContent = "Por favor, introduce tu nombre.";
                 return;
             }
-            if (!lobbyCode) {
-                handleError({ message: "Por favor, introduce un código de sala." });
+            if (!gameId) {
+                joinError.textContent = "Por favor, introduce un ID de juego.";
                 return;
             }
-            if (!currentUserId) {
-                handleError({ message: "No se pudo generar un ID de usuario." });
+            // Comprobación de localUserId en lugar de currentUser
+            if (!localUserId) {
+                joinError.textContent = "Error de autenticación. Inténtalo de nuevo.";
                 return;
             }
 
-            console.log(`Intentando unirse a la sala: ${lobbyCode}`);
+            const gameRef = ref(db, `games/${gameId}`);
+            const snapshot = await get(gameRef);
 
-            isHost = false;
-            console.log("Este cliente NO es el host.");
-            const lobbyRef = ref(db, `games/${lobbyCode}`);
-            
-            get(lobbyRef).then(snapshot => {
-                if (snapshot.exists()) {
-                    const game = snapshot.val();
-                    const gameState = game.gameState;
-                    if (gameState !== "LOBBY") {
-                        handleError({ message: "Esta partida ya ha comenzado." });
-                        return;
-                    }
-                    if (!game.players[game.host]) {
-                        handleError({ message: "El host se ha desconectado. No se puede unir." });
-                        return;
-                    }
-
-                    set(ref(db, `games/${lobbyCode}/players/${currentUserId}`), { name: playerName })
-                        .then(() => joinLobby(lobbyCode))
-                        .catch(handleError);
-                } else {
-                    console.log(`La sala ${lobbyCode} no existe.`);
-                    handleError({ message: "No se encontró esa sala. ¿Código correcto?" });
-                }
-            }).catch(err => {
-                console.error("Error al intentar obtener la sala:", err);
-                handleError({ message: `Error al unirse: ${err.message}.` });
-            });
-        });
-
-        function joinLobby(lobbyCode) {
-            currentLobbyCode = lobbyCode;
-            
-            const playerRef = ref(db, `games/${lobbyCode}/players/${currentUserId}`);
-            onDisconnect(playerRef).remove();
-            
-            if (currentLobbyListener) {
-                off(currentLobbyListener);
-            }
-            const lobbyRef = ref(db, `games/${lobbyCode}`);
-            currentLobbyListener = onValue(lobbyRef, handleGameStateChange);
-        }
-
-        function generateLobbyCode(length) {
-            const chars = 'ABCDEFGHIJKLMNPQRSTUVWXYZ123456789'; // Quitadas O y 0
-            let result = '';
-            for (let i = 0; i < length; i++) {
-                result += chars.charAt(Math.floor(Math.random() * chars.length));
-            }
-            return result;
-        }
-
-        function shuffleArray(array) {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
-            }
-            return array;
-        }
-
-        // --- MOTOR PRINCIPAL DEL JUEGO (STATE MACHINE) ---
-
-        function handleGameStateChange(snapshot) {
             if (!snapshot.exists()) {
-                handleError({ message: "La sala ha sido cerrada por el host." });
-                showScreen('join');
-                if (currentLobbyListener) off(currentLobbyListener);
-                if (hostStateTimer) clearTimeout(hostStateTimer);
-                hostStateTimer = null;
-                currentLobbyCode = null;
-                isHost = false;
+                joinError.textContent = "Juego no encontrado.";
                 return;
             }
 
-            localGameState = snapshot.val();
-            const state = localGameState.gameState;
+            const gameData = snapshot.val();
 
-            if (state === "VOTING") {
-                const round = localGameState.currentRound;
-                const votes = localGameState.votes?.[`round_${round}`]?.[currentUserId] || {};
-                if (votes.creativePessimist) pendingPessimistVote = false;
-                if (votes.persuasiveModerator) pendingModeratorVote = false;
-            } else {
-                pendingPessimistVote = false; 
-                pendingModeratorVote = false;
+            // Añadida comprobación de estado
+            if (gameData.status !== 'lobby') {
+                joinError.textContent = "Este juego ya ha comenzado.";
+                return;
             }
 
-            if (localGameState.players && localGameState.players[currentUserId]) {
-                myTeamId = localGameState.players[currentUserId].team || null;
-            }
-
-            if (currentTimer && state !== "VOTING") {
-                clearInterval(currentTimer);
-                currentTimer = null;
-            }
-
-            if (isHost) {
-                console.log(`Host detecta estado: ${state}`);
-                
-                const round = localGameState.currentRound;
-                const teams = localGameState.teams || {};
-                const numTeams = Object.keys(teams).length;
-                const players = localGameState.players || {};
-                const numPlayers = Object.keys(players).length;
-
-                if (state === "APOCALYPTIC_WRITING" && numTeams > 0) {
-                    const responses = localGameState.responses?.[`round_${round}`] || {};
-                    let apocResponsesCount = 0;
-                    for (const teamId in responses) {
-                        if (responses[teamId].apocalyptic) apocResponsesCount++;
-                    }
-
-                    if (apocResponsesCount >= numTeams) {
-                        console.log("Host: Todos los Apocalípticos han respondido. Avanzando.");
-                        if (hostStateTimer) clearTimeout(hostStateTimer);
-                        hostStateTimer = null;
-                        set(ref(db, `games/${currentLobbyCode}/gameState`), "REALIST_WRITING").catch(handleError);
-                        return;
-                    }
-                } 
-                else if (state === "REALIST_WRITING" && numTeams > 0) {
-                    const responses = localGameState.responses?.[`round_${round}`] || {};
-                    let realistResponsesCount = 0;
-                    for (const teamId in responses) {
-                        if (responses[teamId].realist) realistResponsesCount++;
-                    }
-
-                    if (realistResponsesCount >= numTeams) {
-                        console.log("Host: Todos los Realistas han respondido. Avanzando.");
-                        if (hostStateTimer) clearTimeout(hostStateTimer);
-                        hostStateTimer = null;
-                        set(ref(db, `games/${currentLobbyCode}/gameState`), "VOTING").catch(handleError);
-                        return;
-                    }
-                }
-                else if (state === "VOTING" && numPlayers > 0) {
-                    const votes = localGameState.votes?.[`round_${round}`] || {};
-                    const numVotes = Object.keys(votes).length;
-
-                    if (numVotes >= numPlayers) {
-                        console.log("Host: Todos han votado. Calculando puntuaciones.");
-                        if (hostStateTimer) clearTimeout(hostStateTimer);
-                        hostStateTimer = null;
-                        calculateScoresAndAdvance();
-                        return;
-                    }
-                }
-
-                if (hostStateTimer) {
-                    console.log("Host: El temporizador maestro ya está en marcha.");
-                } else {
-                    let duration = 0;
-                    let nextState = null;
-                    let nextAction = "set";
-
-                    if (state === "APOCALYPTIC_WRITING") {
-                        duration = 30000;
-                        nextState = "REALIST_WRITING";
-                    } else if (state === "REALIST_WRITING") {
-                        duration = 30000;
-                        nextState = "VOTING";
-                    } else if (state === "VOTING") {
-                        duration = 60000;
-                        nextState = "SCORES";
-                        nextAction = "calculate";
-                    }
-
-                    if (duration > 0) {
-                        console.log(`Host iniciando temporizador: ${duration/1000}s para -> ${nextState || 'calculate'}`);
-                        hostStateTimer = setTimeout(() => {
-                            console.log(`Host: Se acabó el tiempo para ${state}. Avanzando...`);
-                            hostStateTimer = null;
-                            
-                            get(ref(db, `games/${currentLobbyCode}/gameState`)).then(snapshot => {
-                                if (snapshot.val() === state) {
-                                    if (nextAction === "calculate") {
-                                        calculateScoresAndAdvance();
-                                    } else {
-                                        set(ref(db, `games/${currentLobbyCode}/gameState`), nextState).catch(handleError);
-                                    }
-                                } else {
-                                    console.log("Host: El estado ya cambió, no se hace nada.");
-                                }
-                            }).catch(handleError);
-                        }, duration);
-                    }
-                }
-            }
-
-            switch (state) {
-                case "LOBBY":
-                    updateLobbyUI();
-                    showScreen('lobby');
-                    break;
-                case "ROLES":
-                    updateRolesUI();
-                    showScreen('roles');
-                    break;
-                case "APOCALYPTIC_WRITING":
-                    showWritingScreen('APOCALYPTIC');
-                    break;
-                case "REALIST_WRITING":
-                    showWritingScreen('REALIST');
-                    break;
-                case "VOTING":
-                    showVotingScreen();
-                    break;
-                case "SCORES":
-                    updateScoresUI();
-                    showScreen('scores');
-                    break;
-                case "GAME_OVER":
-                    updateGameOverUI();
-                    showScreen('gameOver');
-                    break;
-                default:
-                    console.warn("Estado del juego desconocido:", state);
-                    showScreen('join');
-            }
-        }
-
-        // --- LÓGICA DE PANTALLAS DE JUEGO ---
-
-        function updateLobbyUI() {
-            lobbyCodeDisplay.textContent = currentLobbyCode;
-            const players = localGameState.players || {};
-            const playerCount = Object.keys(players).length;
-            
-            playerList.innerHTML = '';
-            Object.values(players).forEach((player, index) => {
-                const playerEl = document.createElement('div');
-                playerEl.className = "bg-gray-900/50 p-3 rounded-lg text-white font-medium text-lg";
-                playerEl.textContent = player.name;
-                playerList.appendChild(playerEl);
+            const playerRef = ref(db, `games/${gameId}/players/${localUserId}`); // Se usa localUserId
+            await set(playerRef, {
+                name: name,
+                isEliminated: false,
+                vote: null
             });
 
-            if (isHost) {
-                btnStartGame.classList.remove('hidden');
-                const isEven = playerCount % 2 === 0;
-                const minPlayers = playerCount >= 2;
-                if (isEven && minPlayers) {
-                    btnStartGame.disabled = false;
-                    btnStartGame.classList.remove("opacity-50", "cursor-not-allowed");
-                    startGameWarning.classList.add('hidden');
-                } else {
-                    btnStartGame.disabled = true;
-                    btnStartGame.classList.add("opacity-50", "cursor-not-allowed");
-                    startGameWarning.textContent = "Se necesita un número par de jugadores (mín. 2)";
-                    startGameWarning.classList.remove('hidden');
+            currentGameId = gameId;
+            isHost = false; // Solo el creador es host
+            listenToGame(gameId);
+        };
+
+        // --- LISTENER PRINCIPAL DEL JUEGO ---
+
+        function listenToGame(gameId) {
+            const gameRef = ref(db, `games/${gameId}`);
+            onValue(gameRef, (snapshot) => {
+                const state = snapshot.val();
+                if (!state) {
+                    // El juego fue borrado (quizás el host se fue)
+                    // Se elimina alert() y se usa un método más limpio
+                    console.log("El juego ha terminado o fue borrado por el host.");
+                    showScreen('join'); // Vuelve a la pantalla de inicio
+                    // Resetea el estado local
+                    currentGameId = null;
+                    isHost = false;
+                    localGameState = null;
+                    if(gameTimerInterval) {
+                        clearInterval(gameTimerInterval);
+                        gameTimerInterval = null;
+                    }
+                    joinError.textContent = "El juego ha terminado o fue borrado.";
+                    return;
                 }
-            }
-        }
-        
-        btnStartGame.addEventListener('click', () => {
-            if (!isHost) return;
-            assignTeamsAndRoles();
-        });
-
-        function assignTeamsAndRoles() {
-            const playerIds = shuffleArray(Object.keys(localGameState.players));
-            const teams = {};
-            const updatedPlayers = { ...localGameState.players };
-            let teamCounter = 0;
-
-            for (let i = 0; i < playerIds.length; i += 2) {
-                const teamId = `team_${String.fromCharCode(65 + teamCounter)}`;
-                const player1Id = playerIds[i];
-                const player2Id = playerIds[i+1];
-
-                const roles = shuffleArray(["APOCALYPTIC", "REALIST"]);
                 
-                updatedPlayers[player1Id].team = teamId;
-                updatedPlayers[player1Id].role = roles[0];
-                updatedPlayers[player2Id].team = teamId;
-                updatedPlayers[player2Id].role = roles[1];
+                localGameState = state; // Actualizar estado local
+                updateUI(state);
 
-                teams[teamId] = {
-                    player1: player1Id,
-                    player2: player2Id,
-                    name: `Equipo ${updatedPlayers[player1Id].name} y ${updatedPlayers[player2Id].name}`,
-                    score: 0
-                };
-                teamCounter++;
-            }
-
-            set(ref(db, `games/${currentLobbyCode}`), {
-                ...localGameState,
-                players: updatedPlayers,
-                teams: teams,
-                currentRound: 1,
-                currentScenario: localGameState.scenarios[0],
-                gameState: "ROLES",
-                responses: {},
-                votes: {},
-                roundScores: {}
-            }).catch(handleError);
+                // El host maneja la lógica del juego
+                if (isHost && localUserId === state.hostId) { // Se usa localUserId
+                    handleHostLogic(state);
+                }
+            });
         }
 
-        function updateRolesUI() {
-            const myPlayer = localGameState.players[currentUserId];
-            if (!myPlayer || !myPlayer.team) {
-                console.warn("No se encontró jugador o equipo, volviendo al lobby");
-                handleError({message: "Error al asignar roles, regresando al lobby."});
-                if(isHost) set(ref(db, `games/${currentLobbyCode}/gameState`), "LOBBY");
-                return;
-            }
-            const myRole = myPlayer.role;
-            const myTeam = localGameState.teams[myPlayer.team];
+        // --- ACTUALIZACIÓN DE LA UI ---
+
+        function updateUI(state) {
+            const players = state.players || {};
+            const playerArray = Object.entries(players).map(([id, data]) => ({ id, ...data }));
             
-            const partnerId = myTeam.player1 === currentUserId ? myTeam.player2 : myTeam.player1;
-            const partner = localGameState.players[partnerId];
-
-            document.getElementById('partner-name').textContent = partner.name;
-            const roleNameEl = document.getElementById('role-name');
+            // Actualizar estado de pantalla
+            if (state.status === 'lobby') {
+                showScreen('lobby');
+                gameIdDisplay.textContent = currentGameId;
+                lobbyPlayerList.innerHTML = playerArray.map(p => `<li class="p-2">${p.name} ${state.hostId === p.id ? '👑' : ''}</li>`).join('');
+                startButton.style.display = (isHost && playerArray.length > 0) ? 'block' : 'none';
             
-            // Textos de rol actualizados
-            if (myRole === "REALIST") {
-                roleNameEl.textContent = "¡EL ARREGLO! 🔧";
-                roleNameEl.classList.remove('text-red-500');
-                roleNameEl.classList.add('text-cyan-500');
-            } else {
-                roleNameEl.textContent = "¡EL PEOR FINAL! ☠️";
-                roleNameEl.classList.remove('text-cyan-500');
-                roleNameEl.classList.add('text-red-500');
-            }
-
-            if (isHost) {
-                document.getElementById('btn-start-round').classList.remove('hidden');
-            }
-        }
-
-        document.getElementById('btn-start-round').addEventListener('click', () => {
-            if (!isHost) return;
-            set(ref(db, `games/${currentLobbyCode}/gameState`), "APOCALYPTIC_WRITING").catch(handleError);
-            set(ref(db, `games/${currentLobbyCode}/roundStartTime`), serverTimestamp()).catch(handleError);
-        });
-
-        function showWritingScreen(roleToShow) {
-            const myRole = localGameState.players[currentUserId].role;
-            const currentScenario = localGameState.currentScenario;
-            const round = localGameState.currentRound;
-
-            let hasSubmitted = false;
-            if (roleToShow === 'APOCALYPTIC' && myRole === 'APOCALYPTIC') {
-                hasSubmitted = !!localGameState.responses?.[`round_${round}`]?.[myTeamId]?.apocalyptic;
-            } else if (roleToShow === 'REALIST' && myRole === 'REALIST') {
-                hasSubmitted = !!localGameState.responses?.[`round_${round}`]?.[myTeamId]?.realist;
-            }
-
-            if (myRole === roleToShow && !hasSubmitted) { 
-                if (roleToShow === 'APOCALYPTIC') {
-                    document.getElementById('scenario-text-apocalyptic').textContent = currentScenario;
-                    document.getElementById('apocalyptic-textarea').value = "";
-                    showScreen('writingApocalyptic');
-                    startTimer(30, 'timer-apocalyptic', () => {
-                        submitApocalypticResponse();
-                    });
-                } else {
-                    const round = localGameState.currentRound;
-                    const apocalypticResponse = localGameState.responses?.[`round_${round}`]?.[myTeamId]?.apocalyptic || "(Tu compi no escribió nada... ¡qué desastre!)";
+            } else if (state.status === 'playing') {
+                if (state.showResults) {
+                    showScreen('results');
+                    correctAnswer.textContent = state.currentPhrase.type;
+                    nextRoundTimer.textContent = state.timer;
                     
-                    document.getElementById('scenario-text-realist').textContent = currentScenario;
-                    document.getElementById('apocalyptic-response-text').textContent = apocalypticResponse;
-                    document.getElementById('realist-textarea').value = "";
-                    showScreen('writingRealist');
-                    startTimer(30, 'timer-realist', () => {
-                        submitRealistResponse();
-                    });
+                    const eliminatedThisRound = playerArray.filter(p => p.justEliminated);
+                    if (eliminatedThisRound.length > 0) {
+                        eliminationInfo.textContent = `Eliminados: ${eliminatedThisRound.map(p => p.name).join(', ')}`;
+                    } else {
+                        eliminationInfo.textContent = "¡Nadie fue eliminado esta ronda!";
+                    }
+
+                } else {
+                    showScreen('game');
+                    roundNumber.textContent = state.currentRound;
+                    phraseText.textContent = state.currentPhrase.text;
+                    
+                    // Barra de tiempo
+                    const timerPercentage = (state.timer / ROUND_TIME) * 100;
+                    timerBar.style.width = `${timerPercentage}%`;
+
+                    // Lógica de votación (diferente para Host y Jugadores)
+                    const myData = players[localUserId]; // Se usa localUserId
+
+                    if (isHost) {
+                        // El Host (proyector) no vota, solo observa.
+                        voteContainer.style.display = 'none';
+                        waitContainer.style.display = 'block';
+                        waitContainer.firstElementChild.textContent = "Partida en curso... Esperando votos.";
+                    
+                    } else if (myData) { // Comprobar si myData existe (es un jugador)
+                        if (myData.isEliminated) {
+                            voteContainer.style.display = 'none';
+                            waitContainer.style.display = 'block';
+                            waitContainer.firstElementChild.textContent = "Has sido eliminado. Esperando...";
+                        } else if (myData.vote) {
+                            voteContainer.style.display = 'none';
+                            waitContainer.style.display = 'block';
+                            waitContainer.firstElementChild.textContent = "¡Voto registrado! Esperando...";
+                        } else {
+                            voteContainer.style.display = 'block';
+                            waitContainer.style.display = 'none';
+                        }
+                    } else {
+                        // Es un espectador o alguien que no se unió a tiempo
+                        voteContainer.style.display = 'none';
+                        waitContainer.style.display = 'block';
+                        waitContainer.firstElementChild.textContent = "Observando...";
+                    }
+                }
+
+            } else if (state.status === 'finished') {
+                showScreen('gameOver');
+                const activePlayers = playerArray.filter(p => !p.isEliminated);
+                if (activePlayers.length === 1) {
+                    winnerInfo.textContent = `¡El ganador es ${activePlayers[0].name}!`;
+                } else {
+                    winnerInfo.textContent = "¡Es un empate!";
+                }
+                playAgainButton.style.display = isHost ? 'block' : 'none';
+            }
+
+            // Actualizar lista de jugadores persistente
+            gamePlayerList.innerHTML = playerArray.map(p => {
+                let classes = "player-item p-2 px-3 rounded-full text-sm transition-all";
+                classes += p.isEliminated ? " eliminated bg-gray-600" : " bg-gray-700";
+                classes += (state.showResults && p.vote && !p.isEliminated) ? (p.vote === state.currentPhrase.type ? " border-2 border-green-500" : " border-2 border-red-500") : "";
+                classes += (!state.showResults && p.vote && !p.isEliminated) ? " voted" : "";
+                return `<li class="${classes}">${p.name}</li>`;
+            }).join('');
+        }
+
+        // --- LÓGICA DEL HOST (MANEJO DEL JUEGO) ---
+
+        startButton.onclick = () => {
+            if (!isHost) return;
+
+            const shuffledPhrases = [...PHRASE_LIST].sort(() => Math.random() - 0.5);
+            const initialPlayers = { ...localGameState.players };
+            Object.keys(initialPlayers).forEach(id => {
+                initialPlayers[id].isEliminated = false;
+                initialPlayers[id].vote = null;
+            });
+
+            const gameRef = ref(db, `games/${currentGameId}`);
+            update(gameRef, {
+                status: 'playing',
+                currentRound: 1,
+                phrases: shuffledPhrases,
+                currentPhrase: shuffledPhrases[0],
+                timer: ROUND_TIME,
+                showResults: false,
+                players: initialPlayers
+            });
+        };
+
+        function handleHostLogic(state) {
+            // Iniciar o detener el temporizador
+            if (state.status === 'playing' && !gameTimerInterval) {
+                gameTimerInterval = setInterval(handleGameTick, 1000);
+            } else if (state.status !== 'playing' && gameTimerInterval) {
+                clearInterval(gameTimerInterval);
+                gameTimerInterval = null;
+            }
+        }
+
+        async function handleGameTick() {
+            if (!isHost || !localGameState || localGameState.status !== 'playing') {
+                clearInterval(gameTimerInterval);
+                gameTimerInterval = null;
+                return;
+            }
+
+            const gameRef = ref(db, `games/${currentGameId}`);
+            let newTimer = localGameState.timer - 1;
+
+            if (localGameState.showResults) {
+                // Estamos en la pantalla de resultados
+                if (newTimer <= 0) {
+                    // Pasar a la siguiente ronda
+                    await nextRound();
+                } else {
+                    await update(gameRef, { timer: newTimer });
                 }
             } else {
-                let waitingText = "";
-                if (hasSubmitted) {
-                    waitingText = "¡Respuesta enviada! Esperando al resto...";
+                // Estamos en la pantalla de votación
+                const players = localGameState.players || {};
+                const activePlayers = Object.values(players).filter(p => !p.isEliminated);
+                const allVoted = activePlayers.every(p => p.vote !== null);
+
+                if (newTimer <= 0 || allVoted) {
+                    // Calcular resultados
+                    await calculateResults();
                 } else {
-                    waitingText = (roleToShow === 'APOCALYPTIC') ? 
-                        "Esperando a que inventen los peores finales... ☠️" :
-                        "Esperando a que los Aguafiestas lo arreglen... 🔧";
+                    await update(gameRef, { timer: newTimer });
                 }
-                document.getElementById('waiting-text').textContent = waitingText;
-                showScreen('waiting');
             }
         }
 
-        document.getElementById('btn-submit-apocalyptic').addEventListener('click', submitApocalypticResponse);
-        document.getElementById('btn-submit-realist').addEventListener('click', submitRealistResponse);
-
-        function submitApocalypticResponse() {
-            if (document.getElementById('screen-waiting').classList.contains('hidden') === false) return;
-
-            if (currentTimer) clearInterval(currentTimer);
-            const response = document.getElementById('apocalyptic-textarea').value.trim() || "(Se quedó en blanco ante el horror 😱)";
-            const round = localGameState.currentRound;
+        async function calculateResults() {
+            const state = localGameState;
+            const players = { ...state.players };
+            const correctAnswer = state.currentPhrase.type;
+            let eliminatedCount = 0;
             
-            document.getElementById('waiting-text').textContent = "¡Respuesta enviada! Esperando al resto...";
-            showScreen('waiting');
+            const activePlayerIds = Object.keys(players).filter(id => !players[id].isEliminated);
+            const wrongPlayerIds = activePlayerIds.filter(id => players[id].vote !== correctAnswer && players[id].vote !== null);
             
-            set(ref(db, `games/${currentLobbyCode}/responses/round_${round}/${myTeamId}/apocalyptic`), response)
-                .catch(handleError);
-        }
-
-        function submitRealistResponse() {
-            if (document.getElementById('screen-waiting').classList.contains('hidden') === false) return;
-            
-            if (currentTimer) clearInterval(currentTimer);
-            const response = document.getElementById('realist-textarea').value.trim() || "(No hay nada que salvar. Estamos perdidos. 💀)";
-            const round = localGameState.currentRound;
-
-            document.getElementById('waiting-text').textContent = "¡Respuesta enviada! Esperando al resto...";
-            showScreen('waiting');
-            
-            set(ref(db, `games/${currentLobbyCode}/responses/round_${round}/${myTeamId}/realist`), response)
-                .catch(handleError);
-        }
-        
-        function startTimer(duration, elementId, onEndCallback) {
-            if (currentTimer) clearInterval(currentTimer);
-            
-            const timerElement = document.getElementById(elementId);
-            if (!timerElement) return;
-
-            let timeLeft = duration;
-            timerElement.textContent = timeLeft;
-
-            currentTimer = setInterval(() => {
-                timeLeft--;
-                timerElement.textContent = timeLeft;
-                if (timeLeft <= 0) {
-                    clearInterval(currentTimer);
-                    currentTimer = null;
-                    if (onEndCallback) onEndCallback();
-                }
-            }, 1000);
-        }
-        
-        function showVotingScreen() {
-            const container = document.getElementById('voting-options-container');
-            container.innerHTML = '';
-            
-            const round = localGameState.currentRound;
-            const responses = localGameState.responses?.[`round_${round}`] || {};
-            const teams = localGameState.teams;
-            const votes = localGameState.votes?.[`round_${round}`]?.[currentUserId] || {};
-
-            let hasOptions = false;
-
-            for (const teamId in responses) {
-                if (teamId === myTeamId) continue;
-                if (!teams[teamId]) continue;
-                
-                hasOptions = true;
-                const teamName = teams[teamId].name;
-                const apocalypticText = responses[teamId].apocalyptic || "(Sin respuesta)";
-                const realistText = responses[teamId].realist || "(Sin respuesta)";
-                
-                const pessimistVoted = !!votes.creativePessimist || pendingPessimistVote;
-                const moderatorVoted = !!votes.persuasiveModerator || pendingModeratorVote;
-                
-                const myPessimistVoteFor = votes.creativePessimist || null;
-                const myModeratorVoteFor = votes.persuasiveModerator || null;
-                
-                // *** CAMBIO AQUÍ: Textos de votación simplificados ***
-                const card = `
-                    <div class="card p-6">
-                        <h4 class="font-title text-2xl text-cyan-400 mb-4">${teamName}</h4>
-                        <div class="mb-4 bg-black/20 p-3 rounded-lg">
-                            <p class="text-xs text-red-400 font-bold uppercase tracking-wider">El Peor Final ☠️:</p>
-                            <p class="italic text-gray-200 text-lg">${apocalypticText}</p>
-                        </div>
-                        <div class="bg-black/20 p-3 rounded-lg">
-                            <p class="text-xs text-cyan-400 font-bold uppercase tracking-wider">El Arreglo 🔧:</p>
-                            <p class="text-gray-200 text-lg">${realistText}</p>
-                        </div>
-                        <div class="flex flex-col sm:flex-row justify-between mt-6 gap-3">
-                            <button class="vote-btn btn flex-1 bg-gray-700 hover:bg-red-600 text-white font-medium py-3 px-4 rounded-lg
-                                ${pessimistVoted ? 'opacity-50 cursor-not-allowed' : ''}
-                                ${myPessimistVoteFor === teamId ? 'bg-red-600 ring-2 ring-white' : ''}" 
-                                data-vote-type="pessimist" data-team-id="${teamId}" ${pessimistVoted ? 'disabled' : ''}>
-                                ¡El Peor Final! ☠️
-                            </button>
-                            <button class="vote-btn btn flex-1 bg-gray-700 hover:bg-cyan-600 text-white font-medium py-3 px-4 rounded-lg
-                                ${moderatorVoted ? 'opacity-50 cursor-not-allowed' : ''}
-                                ${myModeratorVoteFor === teamId ? 'bg-cyan-600 ring-2 ring-white' : ''}" 
-                                data-vote-type="moderator" data-team-id="${teamId}" ${moderatorVoted ? 'disabled' : ''}>
-                                ¡El Mejor Arreglo! 🔧
-                            </button>
-                        </div>
-                    </div>
-                `;
-                container.innerHTML += card;
-            }
-
-            if (!hasOptions) {
-                container.innerHTML = '<p class="text-center text-gray-400 text-xl">Nadie más ha respondido. ¡Ronda de descanso!</p>';
-            }
-
-            document.querySelectorAll('.vote-btn').forEach(btn => {
-                btn.addEventListener('click', handleVote);
-            });
-            
-            showScreen('voting');
-            
-            if (!currentTimer) {
-                startTimer(60, 'timer-voting', () => {
-                    console.log("Tiempo de votación local terminado.");
+            // Lógica de eliminación: no eliminar si todos aciertan o todos fallan
+            if (wrongPlayerIds.length > 0 && wrongPlayerIds.length < activePlayerIds.length) {
+                eliminatedCount = wrongPlayerIds.length;
+                wrongPlayerIds.forEach(id => {
+                    players[id].isEliminated = true;
+                    players[id].justEliminated = true; // Flag temporal
                 });
             }
-        }
-        
-        function handleVote(e) {
-            const btn = e.currentTarget;
-            if (btn.disabled) return;
-            
-            const voteType = btn.dataset.voteType;
-            const teamId = btn.dataset.teamId;
-            const round = localGameState.currentRound;
-            const votes = localGameState.votes?.[`round_${round}`]?.[currentUserId] || {};
-            
-            const voteKey = voteType === 'pessimist' ? 'creativePessimist' : 'persuasiveModerator';
 
-            if (votes[voteKey]) {
-                console.log("Voto ya confirmado.");
-                return;
-            }
-            
-            if (voteType === 'pessimist' && pendingPessimistVote) {
-                console.log("Voto pesimista pendiente.");
-                return;
-            }
-            if (voteType === 'moderator' && pendingModeratorVote) {
-                console.log("Voto moderador pendiente.");
-                return;
-            }
-            
-            if (voteType === 'pessimist') pendingPessimistVote = true;
-            if (voteType === 'moderator') pendingModeratorVote = true;
-            
-            set(ref(db, `games/${currentLobbyCode}/votes/round_${round}/${currentUserId}/${voteKey}`), teamId)
-                .catch(handleError);
+            // Limpiar flags temporales
+            Object.keys(players).forEach(id => {
+                if (!wrongPlayerIds.includes(id)) {
+                    players[id].justEliminated = false;
+                }
+            });
 
-            showVotingScreen();
+            const activePlayersLeft = activePlayerIds.length - eliminatedCount;
+            let newStatus = 'playing';
+            if (activePlayersLeft <= 1) {
+                newStatus = 'finished';
+            }
+
+            await update(ref(db, `games/${currentGameId}`), {
+                status: newStatus,
+                showResults: true,
+                timer: RESULTS_TIME,
+                players: players
+            });
         }
-        
-        function calculateScoresAndAdvance() {
+
+        async function nextRound() {
+            const state = localGameState;
+            const newRound = state.currentRound + 1;
+            
+            if (newRound > state.phrases.length || state.status === 'finished') {
+                await update(ref(db, `games/${currentGameId}`), { status: 'finished' });
+                return;
+            }
+
+            const players = { ...state.players };
+            Object.keys(players).forEach(id => {
+                players[id].vote = null; // Resetear votos
+                players[id].justEliminated = false; // Limpiar flag
+            });
+
+            await update(ref(db, `games/${currentGameId}`), {
+                currentRound: newRound,
+                currentPhrase: state.phrases[newRound - 1],
+                timer: ROUND_TIME,
+                showResults: false,
+                players: players
+            });
+        }
+
+        // --- ACCIONES DEL JUGADOR ---
+
+        pessimistButton.onclick = () => submitVote('pesimista');
+        realistButton.onclick = () => submitVote('realista');
+
+        function submitVote(vote) {
+            if (!currentGameId || !localUserId) return; // Se usa localUserId
+            const myData = localGameState.players[localUserId]; // Se usa localUserId
+            if (myData.isEliminated || myData.vote) return; // No votar si ya votó o está eliminado
+
+            const voteRef = ref(db, `games/${currentGameId}/players/${localUserId}/vote`); // Se usa localUserId
+            set(voteRef, vote);
+        }
+ 
+        // --- FIN DEL JUEGO / REINICIAR ---
+
+        playAgainButton.onclick = async () => {
             if (!isHost) return;
-
-            if (localGameState.gameState !== "VOTING") {
-                console.warn("calculateScoresAndAdvance llamado pero el estado no es VOTING. Ignorando.");
-                return;
-            }
-
-            console.log("Host: Calculando puntuaciones...");
-
-            const round = localGameState.currentRound;
-            const votes = localGameState.votes?.[`round_${round}`] || {};
-            const teams = localGameState.teams;
             
-            const roundScores = {};
-            Object.keys(teams).forEach(teamId => {
-                roundScores[teamId] = 0;
+            // Resetear el estado del juego a la sala de espera
+            const players = { ...localGameState.players };
+            Object.keys(players).forEach(id => {
+                players[id].isEliminated = false;
+                players[id].vote = null;
             });
 
-            // Bonus por metáfora (simplificado)
-            const responses = localGameState.responses?.[`round_${round}`] || {};
-
-            for (const voterId in votes) {
-                const vote = votes[voterId];
-                if (vote.creativePessimist && roundScores[vote.creativePessimist] !== undefined) {
-                    roundScores[vote.creativePessimist] += 100;
-                }
-                if (vote.persuasiveModerator && roundScores[vote.persuasiveModerator] !== undefined) {
-                    roundScores[vote.persuasiveModerator] += 100;
-                }
-            }
-            
-            // Añadir bonus por metáforas (lógica simple de placeholder)
-            Object.keys(teams).forEach(teamId => {
-                const teamResponse = responses[teamId] || {};
-                if (teamResponse.apocalyptic?.includes("como un")) roundScores[teamId] += 50;
-                if (teamResponse.realist?.includes("es igual que")) roundScores[teamId] += 50;
+            await set(ref(db, `games/${currentGameId}`), {
+                status: 'lobby',
+                hostId: localUserId, // <-- ERROR CORREGIDO: de currentUser.uid a localUserId
+                players: players
             });
+        };
 
+        // Limpieza al cerrar la pestaña (opcional pero bueno)
+        window.addEventListener('beforeunload', () => {
+            if (!currentGameId || !localUserId) return; // Se usa localUserId
 
-            const promises = [];
-            for (const teamId in roundScores) {
-                if (roundScores[teamId] > 0) {
-                    const teamScoreRef = ref(db, `games/${currentLobbyCode}/teams/${teamId}/score`);
-                    promises.push(runTransaction(teamScoreRef, (currentScore) => {
-                        return (currentScore || 0) + roundScores[teamId];
-                    }));
-                }
-            }
-            
-            Promise.all(promises).then(() => {
-                set(ref(db, `games/${currentLobbyCode}`), {
-                    ...localGameState,
-                    roundScores: { ...localGameState.roundScores, [`round_${round}`]: roundScores },
-                    gameState: "SCORES"
-                }).catch(handleError);
-                
-                console.log("Host: Puntuaciones calculadas y estado cambiado a SCORES.");
-            }).catch(handleError);
-        }
-        
-        function updateScoresUI() {
-            const round = localGameState.currentRound;
-            const votes = localGameState.votes?.[`round_${round}`] || {};
-            const roundScores = localGameState.roundScores?.[`round_${round}`] || {};
-            const teams = localGameState.teams || {};
+            const playerRef = ref(db, `games/${currentGameId}/players/${localUserId}`); // Se usa localUserId
+            remove(playerRef); // Quitar al jugador
 
-            const roundScoresList = document.getElementById('round-scores-list');
-            const totalScoresList = document.getElementById('total-scores-list');
-            roundScoresList.innerHTML = '';
-            totalScoresList.innerHTML = '';
-
-            // --- Lógica de Ganadores de Ronda (para "competición") ---
-            const voteCounts = { pessimist: {}, moderator: {} };
-            Object.values(votes).forEach(vote => {
-                if (vote.creativePessimist) {
-                    voteCounts.pessimist[vote.creativePessimist] = (voteCounts.pessimist[vote.creativePessimist] || 0) + 1;
-                }
-                if (vote.persuasiveModerator) {
-                    voteCounts.moderator[vote.persuasiveModerator] = (voteCounts.moderator[vote.persuasiveModerator] || 0) + 1;
-                }
-            });
-
-            // Encontrar el teamId con más votos para cada categoría
-            const findWinner = (counts) => Object.keys(counts).reduce((a, b) => counts[a] > counts[b] ? a : b, null);
-            
-            const winnerPessimistId = findWinner(voteCounts.pessimist);
-            const winnerModeratorId = findWinner(voteCounts.moderator);
-
-            if (winnerPessimistId && teams[winnerPessimistId]) {
-                const score = (roundScores[winnerPessimistId] || 0) - (roundScores[winnerModeratorId] === winnerPessimistId ? (roundScores[winnerModeratorId] || 0) : 0);
-                roundScoresList.innerHTML += `
-                    <div class="bg-gray-900/50 p-4 rounded-lg">
-                        <span class="font-title text-xl text-red-500 block">¡EL PEOR FINAL! ☠️</span>
-                        <span class="text-lg">${teams[winnerPessimistId].name}</span>
-                        <span class="font-bold text-lime-400 text-xl score-pulse float-right">+100</span>
-                    </div>`;
-            } else {
-                 roundScoresList.innerHTML += `
-                    <div class="bg-gray-900/50 p-4 rounded-lg opacity-60">
-                        <span class="font-title text-xl text-red-500 block">¡EL PEOR FINAL! ☠️</span>
-                        <span class="text-lg">Nadie ganó...</span>
-                    </div>`;
-            }
-
-            if (winnerModeratorId && teams[winnerModeratorId]) {
-                 roundScoresList.innerHTML += `
-                    <div class="bg-gray-900/50 p-4 rounded-lg">
-                        <span class="font-title text-xl text-cyan-500 block">¡EL MEJOR ARREGLO! 🔧</span>
-                        <span class="text-lg">${teams[winnerModeratorId].name}</span>
-                        <span class="font-bold text-lime-400 text-xl score-pulse float-right">+100</span>
-                    </div>`;
-            } else {
-                 roundScoresList.innerHTML += `
-                    <div class="bg-gray-900/50 p-4 rounded-lg opacity-60">
-                        <span class="font-title text-xl text-cyan-500 block">¡EL MEJOR ARREGLO! 🔧</span>
-                        <span class="text-lg">Nadie ganó...</span>
-                    </div>`;
-            }
-            
-            // --- Lógica de Leaderboard (para "competición") ---
-            const sortedTeams = Object.entries(teams).sort(([, a], [, b]) => b.score - a.score);
-
-            sortedTeams.forEach(([teamId, teamData], index) => {
-                const medal = ['🏆', '🥈', '🥉'][index] || `<span class="text-gray-500 text-lg w-6">${index + 1}.</span>`;
-                const el = document.createElement('div');
-                el.className = `flex justify-between items-center bg-gray-900/50 p-4 rounded-lg ${index === 0 ? 'border-2 border-lime-400' : 'border-2 border-transparent'}`;
-                el.innerHTML = `
-                    <span class="font-bold text-xl flex items-center gap-3">${medal} ${teamData.name}</span>
-                    <span class="font-extrabold text-3xl text-cyan-400">${teamData.score}</span>
-                `;
-                totalScoresList.appendChild(el);
-            });
-            
             if (isHost) {
-                // Comprobar si quedan escenarios
-                const isLastRound = localGameState.currentRound >= localGameState.scenarios.length;
-                if (isLastRound) {
-                    document.getElementById('btn-end-game').classList.remove('hidden');
-                    document.getElementById('btn-next-round').classList.add('hidden');
-                } else {
-                    document.getElementById('btn-end-game').classList.add('hidden');
-                    document.getElementById('btn-next-round').classList.remove('hidden');
-                }
+                // Si el host se va, borrar el juego
+                const gameRef = ref(db, `games/${currentGameId}`);
+                remove(gameRef);
             }
-        }
-        
-        document.getElementById('btn-next-round').addEventListener('click', () => {
-            if (!isHost) return;
-            
-            const newRound = localGameState.currentRound + 1;
-            const newScenario = localGameState.scenarios[newRound - 1];
-            
-            const updatedPlayers = { ...localGameState.players };
-            Object.keys(updatedPlayers).forEach(playerId => {
-                updatedPlayers[playerId].role = updatedPlayers[playerId].role === "APOCALYPTIC" ? "REALIST" : "APOCALYPTIC";
-            });
-
-            set(ref(db, `games/${currentLobbyCode}/players`), updatedPlayers).catch(handleError);
-            set(ref(db, `games/${currentLobbyCode}/currentRound`), newRound).catch(handleError);
-            set(ref(db, `games/${currentLobbyCode}/currentScenario`), newScenario).catch(handleError);
-            set(ref(db, `games/${currentLobbyCode}/gameState`), "ROLES").catch(handleError);
-        });
-        
-        document.getElementById('btn-end-game').addEventListener('click', () => {
-            if (!isHost) return;
-            set(ref(db, `games/${currentLobbyCode}/gameState`), "GAME_OVER").catch(handleError);
-        });
-
-        function updateGameOverUI() {
-            const teams = localGameState.teams || {};
-            const sortedTeams = Object.entries(teams).sort(([, a], [, b]) => b.score - a.score);
-            
-            const finalScoresList = document.getElementById('final-scores-list');
-            finalScoresList.innerHTML = '';
-            
-            if (sortedTeams.length > 0) {
-                const winner = sortedTeams[0][1];
-                document.getElementById('winner-team-name').textContent = winner.name;
-
-                sortedTeams.forEach(([teamId, teamData], index) => {
-                    const medal = ['🏆', '🥈', '🥉'][index] || `<span class="text-gray-500 text-lg w-6">${index + 1}.</span>`;
-                    const el = document.createElement('div');
-                    // Color de ganador revertido a "lime"
-                    el.className = `flex justify-between items-center p-4 rounded-lg ${index === 0 ? 'bg-lime-600/50' : 'bg-gray-900/50'}`;
-                    el.innerHTML = `
-                        <span class="font-bold text-xl flex items-center gap-3">${medal} ${teamData.name}</span>
-                        <span class="font-extrabold text-3xl text-white">${teamData.score}</span>
-                    `;
-                    finalScoresList.appendChild(el);
-                });
-
-            } else {
-                document.getElementById('winner-team-name').textContent = "Empate técnico.";
-            }
-            
-            if (isHost) {
-                document.getElementById('btn-play-again').classList.remove('hidden');
-            }
-        }
-        
-        document.getElementById('btn-play-again').addEventListener('click', () => {
-            if (!isHost) return;
-            
-            const players = localGameState.players;
-            Object.keys(players).forEach(pId => {
-                delete players[pId].role;
-                delete players[pId].team;
-            });
-            
-            const newGame = {
-                host: currentUserId,
-                gameState: "LOBBY",
-                createdAt: serverTimestamp(),
-                players: players,
-                currentRound: 0,
-                scenarios: shuffleArray([...allScenarios])
-            };
-
-            set(ref(db, `games/${currentLobbyCode}`), newGame).catch(handleError);
         });
 
     </script>
