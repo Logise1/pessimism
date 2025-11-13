@@ -437,9 +437,11 @@
                 if (activePlayers.length === 1) {
                     winnerInfo.textContent = `Superviviente: ${activePlayers[0].name}`;
                 } else if (activePlayers.length > 1) {
+                     // Esto ya no debería pasar, pero se mantiene como fallback
                      winnerInfo.textContent = `Supervivientes: ${activePlayers.map(p => p.name).join(', ')}`;
                 } else {
-                    winnerInfo.textContent = "Error en el sistema. No hay supervivientes.";
+                    // Ahora es un resultado oficial
+                    winnerInfo.textContent = "NADIE HA SUPERADO LA PRUEBA.";
                 }
                 playAgainButton.style.display = isHost ? 'block' : 'none';
             }
@@ -559,8 +561,10 @@
             // CORRECCIÓN: Los que votan null (se acaba el tiempo) también son eliminados
             const wrongPlayerIds = activePlayerIds.filter(id => players[id].vote !== correctAnswer);
             
-            // Lógica de eliminación: no eliminar si todos aciertan o todos fallan (o no votan)
-            if (wrongPlayerIds.length > 0 && wrongPlayerIds.length < activePlayerIds.length) {
+            // Lógica de eliminación: (MODIFICADA)
+            // Se elimina la condición '&& wrongPlayerIds.length < activePlayerIds.length'.
+            // Si te equivocas, estás eliminado. Si todos se equivocan, todos son eliminados.
+            if (wrongPlayerIds.length > 0) {
                 eliminatedCount = wrongPlayerIds.length;
                 wrongPlayerIds.forEach(id => {
                     players[id].isEliminated = true;
@@ -591,11 +595,20 @@
 
         async function nextRound() {
             const state = localGameState;
-            const newRound = state.currentRound + 1;
+            let newRound = state.currentRound + 1;
+            let phrases = state.phrases; // Usar las frases existentes
             
-            if (newRound > state.phrases.length || state.status === 'finished') {
+            // Si el estado es 'finished' (0 o 1 jugador), termina.
+            if (state.status === 'finished') {
                 await update(ref(db, `games/${currentGameId}`), { status: 'finished' });
                 return;
+            }
+
+            // Si nos quedamos sin frases, pero el juego NO ha terminado...
+            if (newRound > phrases.length) {
+                // ¡Baraja de nuevo y empieza un "nuevo ciclo"!
+                newRound = 1; // Resetea el contador de ronda (o mantenlo, estético)
+                phrases = [...PHRASE_LIST].sort(() => Math.random() - 0.5); // Baraja la lista maestra
             }
 
             const players = { ...state.players };
@@ -606,7 +619,8 @@
 
             await update(ref(db, `games/${currentGameId}`), {
                 currentRound: newRound,
-                currentPhrase: state.phrases[newRound - 1],
+                currentPhrase: phrases[newRound - 1], // Usa la lista de frases (potencialmente nueva)
+                phrases: phrases, // Guarda la nueva lista barajada si es el caso
                 timer: ROUND_TIME,
                 showResults: false,
                 players: players
