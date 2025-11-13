@@ -3,720 +3,563 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>La Decisión</title>
-    <!-- Carga de Tailwind CSS -->
+    <title>La Prueba</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Estilos personalizados para el juego */
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+        /* Estilos personalizados para el tema oscuro */
+        @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap');
+        
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Roboto Mono', monospace;
         }
-        .screen {
-            display: none;
+        
+        /* Efecto de "glitch" sutil para el texto eliminado */
+        .text-eliminado {
+            color: #ef4444; /* red-500 */
+            text-decoration: line-through;
+            animation: glitch 0.3s linear infinite;
         }
-        .screen.active {
-            display: block;
-        }
-        /* Animación de entrada */
+
+        /* Animación de aparición */
         .fade-in {
-            animation: fadeIn 0.5s ease-out;
+            animation: fadeIn 0.5s ease-in-out;
         }
+
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
+            from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        /* Estilo para jugadores eliminados */
-        .player-item.eliminated {
-            text-decoration: line-through;
-            opacity: 0.4;
-            background-color: #374151; /* bg-gray-700 */
+
+        /* Estilo de botones base */
+        .btn {
+            @apply w-full px-6 py-4 text-lg font-bold uppercase border-2 rounded-md transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-opacity-50;
         }
-        /* Indicador de voto (más sutil) */
-        .player-item.voted::after {
-            content: '■';
-            color: #facc15; /* yellow-500 */
-            font-size: 10px;
-            margin-left: 8px;
-            vertical-align: middle;
+
+        .btn-primary {
+            @apply bg-white text-black border-white hover:bg-gray-200 focus:ring-white;
         }
+
+        .btn-danger {
+            @apply text-red-500 border-red-500 hover:bg-red-500 hover:text-black focus:ring-red-500;
+        }
+
+        .btn-secondary {
+             @apply text-gray-400 border-gray-400 hover:bg-gray-400 hover:text-black focus:ring-gray-400;
+        }
+
+        .btn-disabled {
+            @apply text-gray-700 border-gray-700 bg-gray-900 cursor-not-allowed;
+        }
+
+        /* Estilo para listas de jugadores */
+        .player-list-item {
+            @apply px-4 py-2 bg-gray-900 border border-gray-700 rounded-md text-gray-300;
+        }
+        .player-list-item.survivor {
+            @apply border-green-500 text-green-400;
+        }
+        .player-list-item.eliminated {
+            @apply border-red-500 text-red-500 line-through;
+        }
+
     </style>
 </head>
-<body class="bg-black text-gray-300 min-h-screen flex items-center justify-center p-4">
+<body class="bg-black text-gray-200 min-h-screen flex items-center justify-center p-4">
 
-    <!-- Contenedor principal del juego -->
-    <div id="app-container" class="w-full max-w-lg mx-auto bg-gray-900 rounded-lg border border-gray-700 p-6 md:p-8">
-
-        <!-- 1. Pantalla de Unirse (Join Screen) -->
-        <div id="join-screen" class="screen active fade-in">
-            <h1 class="text-3xl md:text-4xl font-black text-center mb-6">La Decisión</h1>
-            <p class="text-center text-gray-500 mb-8">Solo puede quedar uno.</p>
-            <div class="space-y-4">
-                <input type="text" id="player-name" placeholder="Identificador" class="w-full p-3 bg-gray-800 text-white rounded-lg border border-gray-700 focus:outline-none focus:ring-2 focus:ring-red-500" maxlength="15">
-                <input type="text" id="game-id-input" placeholder="ID de la Partida (para unirte)" class="w-full p-3 bg-gray-800 text-white rounded-lg border border-gray-700 focus:outline-none focus:ring-2 focus:ring-red-500" maxlength="5">
-                <button id="join-button" class="w-full p-3 bg-gray-700 hover:bg-gray-600 rounded-lg font-bold text-lg transition-colors">Entrar</button>
-                <button id="host-button" class="w-full p-3 bg-gray-700 hover:bg-gray-600 rounded-lg font-bold text-lg transition-colors">Iniciar Partida</button>
-            </div>
-            <p id="join-error" class="text-red-400 text-center mt-4"></p>
-        </div>
-
-        <!-- 2. Pantalla de Espera (Lobby Screen) -->
-        <div id="lobby-screen" class="screen">
-            <h2 class="text-2xl font-bold text-center mb-4">Sala de Contención</h2>
-            <div class="bg-gray-800 border border-gray-700 p-4 rounded-lg text-center mb-6">
-                <p class="text-gray-400">ID de la Partida:</p>
-                <span id="game-id-display" class="text-3xl font-black text-red-500 tracking-widest font-mono">...</span>
-            </div>
-            <h3 class="font-bold text-lg mb-2">Participantes: <span id="lobby-player-count">0</span></h3>
-            <ul id="lobby-player-list" class="bg-gray-800 rounded-lg p-4 space-y-2 min-h-[100px] border border-gray-700">
-                <!-- Participantes se añadirán aquí dinámicamente -->
-            </ul>
-            <button id="start-button" class="w-full p-3 bg-yellow-600 hover:bg-yellow-700 text-black rounded-lg font-bold text-lg transition-colors mt-6">Comenzar Prueba</button>
-        </div>
-
-        <!-- 3. Pantalla de Juego (Game Screen) -->
-        <div id="game-screen" class="screen">
-            <div id="round-info" class="mb-4">
-                <div class="flex justify-between text-lg mb-2">
-                    <span class="text-gray-400">Prueba <span id="round-number">1</span></span>
-                    <span class="text-yellow-500 font-bold">Vivos: <span id="game-survivors">0</span></span>
-                </div>
-                <div class="w-full bg-gray-700 rounded-full h-2.5">
-                    <div id="timer-bar" class="bg-red-700 h-2.5 rounded-full transition-all duration-1000 linear"></div>
-                </div>
-            </div>
-
-            <!-- Contenedor de la Frase -->
-            <div id="phrase-container" class="bg-gray-800 border border-gray-700 p-6 rounded-lg min-h-[150px] flex items-center justify-center text-center mb-6">
-                <p id="phrase-text" class="text-xl md:text-2xl font-medium">...</p>
-            </div>
-
-            <!-- Contenedor de Votación -->
-            <div id="vote-container">
-                <p class="text-center text-gray-400 mb-4">Toma tu decisión.</p>
-                <div class="grid grid-cols-2 gap-4">
-                    <button id="pessimist-button" class="p-4 bg-red-700 hover:bg-red-800 rounded-lg font-bold text-2xl transition-colors focus:outline-none focus:ring-2 focus:ring-red-400">Pesimista</button>
-                    <button id="realist-button" class="p-4 bg-gray-600 hover:bg-gray-700 rounded-lg font-bold text-2xl transition-colors focus:outline-none focus:ring-2 focus:ring-gray-400">Realista</button>
-                </div>
-            </div>
-
-            <!-- Contenedor de Espera -->
-            <div id="wait-container" class="text-center p-6 bg-gray-800 rounded-lg border border-gray-700" style="display: none;">
-                <p class="text-xl text-gray-400">Decisión registrada. Esperando...</p>
-            </div>
-        </div>
-
-        <!-- 4. Pantalla de Resultados de Ronda -->
-        <div id="results-screen" class="screen text-center">
-            <h2 class="text-2xl font-bold mb-4">Evaluación</h2>
-            <p class="text-lg mb-2">La respuesta correcta era:</p>
-            <span id="correct-answer" class="text-3xl font-black uppercase mb-4 block">...</span>
-            
-            <div class="flex justify-around text-xl mb-4 p-4 bg-gray-800 rounded-lg border border-gray-700">
-                <span class="text-green-500 font-bold">Vivos: <span id="results-survivors">0</span></span>
-                <span class="text-red-500 font-bold">Eliminados: <span id="results-eliminated">0</span></span>
-            </div>
-
-            <p id="elimination-info" class="text-xl text-red-400 font-bold mb-4 h-12">...</p>
-            <p class="text-gray-400">Siguiente prueba en <span id="next-round-timer">5</span>...</p>
-        </div>
-
-        <!-- 5. Pantalla de Fin de Juego -->
-        <div id="game-over-screen" class="screen text-center">
-            <h2 class="text-4xl font-black mb-6">PRUEBA FINALIZADA</h2>
-            <p id="winner-info" class="text-2xl text-yellow-500 mb-8">...</p>
-            <button id="play-again-button" class="w-full p-3 bg-yellow-600 hover:bg-yellow-700 text-black rounded-lg font-bold text-lg transition-colors mt-6">Reiniciar Protocolo</button>
-        </div>
-
-        <!-- Lista de Jugadores (Visible siempre durante el juego) -->
-        <div id="player-list-container" class="mt-6" style="display: none;">
-            <h3 class="font-bold text-sm text-gray-400 mb-2 text-center uppercase tracking-wider">Participantes</h3>
-            <ul id="game-player-list" class="flex flex-wrap justify-center gap-2">
-                <!-- Ejemplo: <li class="player-item bg-gray-800 p-2 px-3 rounded-full text-sm">Participante 1</li> -->
-            </ul>
+    <!-- Contenedor principal de la aplicación -->
+    <div id="app" class="w-full max-w-4xl mx-auto">
+        <!-- Esta pantalla se sobrescribirá con JavaScript -->
+        <div class="text-center">
+            <h1 class="text-3xl font-bold text-white mb-6">INICIANDO SISTEMA...</h1>
+            <p class="text-gray-500">Estableciendo conexión...</p>
         </div>
     </div>
 
-    <!-- Script de Firebase -->
+    <!-- Firebase SDK -->
     <script type="module">
-        // Importaciones de Firebase v9+
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
-        // SE HAN ELIMINADO LAS IMPORTACIONES DE AUTH
-        import { getDatabase, ref, set, get, onValue, update, remove } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
+        // Importar funciones de Firebase
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        // Se elimina la importación de 'auth'
+        import { getDatabase, ref, onValue, set, update, onDisconnect, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-        // CONFIGURACIÓN DE FIREBASE (proporcionada por el usuario)
+        // --- CONFIGURACIÓN DE FIREBASE (PROPORCIONADA POR EL USUARIO) ---
         const firebaseConfig = {
             apiKey: "AIzaSyDrYwIMyL2y7yHXxQF4yjtokPOE2QyHC5I",
             authDomain: "pesimism-2fdad.firebaseapp.com",
-            databaseURL: "https://pesimism-2fdad-default-rtdb.europe-west1.firebasedatabase.app",
+            databaseURL: "https://pesimism-2fdad-default-rtdb.europe-west1.firebasedatabase.app", // Corregido el error tipográfico
             projectId: "pesimism-2fdad",
             storageBucket: "pesimism-2fdad.firebasestorage.app",
             messagingSenderId: "859660712236",
             appId: "1:859660712236:web:e09ac663d189f550d2d489",
             measurementId: "G-TYE4V0P8XB"
         };
-
-        // BASE DE DATOS DE FRASES
-        const PHRASE_LIST = [
-            { text: "Todo va a salir mal.", type: "pesimista" },
-            { text: "No tiene sentido intentarlo, fracasaré de todos modos.", type: "pesimista" },
-            { text: "A veces las cosas no salen como planeas.", type: "realista" },
-            { text: "El éxito requiere esfuerzo y asumir la posibilidad de fallar.", type: "realista" },
-            { text: "Nunca se puede confiar en nadie.", type: "pesimista" },
-            { text: "Es prudente ser cauteloso con en quién confías plenamente.", type: "realista" },
-            { text: "La felicidad es solo una ilusión temporal.", type: "pesimista" },
-            { text: "La felicidad es un estado emocional que fluctúa.", type: "realista" },
-            { text: "El futuro es incierto y probablemente peor.", type: "pesimista" },
-            { text: "El futuro es incierto y no se puede predecir.", type: "realista" },
-            { text: "Da igual lo que hagas, el resultado será el mismo.", type: "pesimista" },
-            { text: "No siempre puedes controlar el resultado, solo tu esfuerzo.", type: "realista" },
-            { text: "La mayoría de la gente solo se preocupa por sí misma.", type: "realista" }, // Ambiguo
-            { text: "Todo el mundo es fundamentalmente egoísta.", type: "pesimista" },
-            { text: "No hay nada bueno en el mundo.", type: "pesimista" },
-            { text: "El mundo tiene problemas significativos que deben abordarse.", type: "realista" },
-            { text: "Siempre acabarás solo.", type: "pesimista" },
-            { text: "Las relaciones requieren trabajo y no todas duran para siempre.", type: "realista" },
-            { text: "Planificar es inútil porque todo se tuerce.", type: "pesimista" },
-            { text: "Los planes deben ser flexibles para adaptarse a imprevistos.", type: "realista" }
+        
+        // --- BANCO DE FRASES ---
+        // 'r' = Realista, 'p' = Pesimista
+        // Ordenadas de más fácil a más difícil/ambiguo
+        const PHRASES = [
+            { text: "Eventualmente, todo lo que tiene un principio tiene un fin.", answer: 'r' },
+            { text: "No importa cuánto te esfuerces, el fracaso siempre es una posibilidad.", answer: 'r' },
+            { text: "La gente siempre actuará en su propio interés, incluso a costa tuya.", answer: 'p' },
+            { text: "El sol saldrá mañana, sin importar lo que pase hoy.", answer: 'r' },
+            { text: "Toda buena racha está destinada a terminarse.", answer: 'p' },
+            { text: "Las estadísticas de accidentes aumentan significativamente durante los días festivos.", answer: 'r' },
+            { text: "Confiar en los demás es la forma más rápida de salir lastimado.", answer: 'p' },
+            { text: "Un pequeño porcentaje de la población controla la mayoría de los recursos globales.", answer: 'r' },
+            { text: "La mayoría de las relaciones humanas están basadas en la conveniencia mutua.", answer: 'p' },
+            { text: "La esperanza es solo una negación de la realidad.", answer: 'p' },
+            { text: "Incluso las decisiones mejor informadas pueden tener resultados negativos.", answer: 'r' },
+            { text: "Al final, estás fundamentalmente solo.", answer: 'p' },
+            { text: "La historia humana está definida por el conflicto, no por la paz.", answer: 'r' },
+            { text: "Es mejor no esperar nada para nunca sentirse decepcionado.", answer: 'p' }
         ];
 
-        // Inicializar Firebase
+        // --- VARIABLES GLOBALES ---
         const app = initializeApp(firebaseConfig);
-        // SE HA ELIMINADO LA INICIALIZACIÓN DE AUTH
+        // Se elimina la const 'auth'
         const db = getDatabase(app);
+        
+        let localUserId = null; // Reemplaza a userId de auth
+        let isHost = false;
+        let gameState = {}; // Caché local del estado del juego
+        
+        const appElement = document.getElementById('app');
+        const gameRef = ref(db, 'la-prueba/game');
 
-        // --- DECLARACIÓN DE ELEMENTOS DOM ---
-        const playerNameInput = document.getElementById('player-name');
-        const gameIdInput = document.getElementById('game-id-input');
-        const joinButton = document.getElementById('join-button');
-        const hostButton = document.getElementById('host-button');
-        const joinError = document.getElementById('join-error');
-
-        const gameIdDisplay = document.getElementById('game-id-display');
-        const lobbyPlayerList = document.getElementById('lobby-player-list');
-        const lobbyPlayerCount = document.getElementById('lobby-player-count');
-        const startButton = document.getElementById('start-button');
-
-        const roundNumber = document.getElementById('round-number');
-        const gameSurvivors = document.getElementById('game-survivors');
-        const phraseText = document.getElementById('phrase-text');
-        const timerBar = document.getElementById('timer-bar');
-        const voteContainer = document.getElementById('vote-container');
-        const waitContainer = document.getElementById('wait-container');
-        const pessimistButton = document.getElementById('pessimist-button');
-        const realistButton = document.getElementById('realist-button');
-
-        const correctAnswer = document.getElementById('correct-answer');
-        const nextRoundTimer = document.getElementById('next-round-timer');
-        const resultsSurvivors = document.getElementById('results-survivors');
-        const resultsEliminated = document.getElementById('results-eliminated');
-        const eliminationInfo = document.getElementById('elimination-info');
-
-        const winnerInfo = document.getElementById('winner-info');
-        const playAgainButton = document.getElementById('play-again-button');
-        const gamePlayerList = document.getElementById('game-player-list');
-        const playerListContainer = document.getElementById('player-list-container');
-
-        // Screen elements
-        const screens = document.querySelectorAll('.screen');
-
-
-        // --- MANEJO DE ID DE USUARIO LOCAL ---
-        // Se crea un ID local si no existe en la sesión
-        function getOrCreateLocalUserId() {
-            let uid = sessionStorage.getItem('pesimistaGameUserId');
-            if (!uid) {
-                uid = Math.random().toString(36).substring(2, 12); // Un ID aleatorio simple
-                sessionStorage.setItem('pesimistaGameUserId', uid);
-            }
-            return uid;
+        // --- FUNCIÓN PRINCIPAL ---
+        function main() {
+            // Ya no usamos onAuthStateChanged
+            localUserId = crypto.randomUUID(); // Genera un ID local único
+            console.log("Sesión local iniciada con ID:", localUserId);
+            renderInitialScreen();
         }
 
-        // Variables de estado del juego
-        let localUserId = getOrCreateLocalUserId(); // ID de usuario local en lugar de currentUser
-        let currentGameId = null;
-        let isHost = false;
-        let localGameState = null;
-        let gameTimerInterval = null;
-        let isTickInProgress = false; // El bloqueo
-        const ROUND_TIME = 15; // segundos
-        const RESULTS_TIME = 5; // segundos
- 
-        // --- Helper function to show screens ---
-        function showScreen(screenId) {
-            // Ocultar todas las pantallas
-            screens.forEach(screen => {
-                screen.classList.remove('active');
+        // --- FUNCIONES DE RENDERIZADO (VISTAS) ---
+
+        // Escapar HTML para evitar XSS
+        function escapeHTML(str) {
+            return str.replace(/[&<>"']/g, function(m) {
+                return {
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#39;'
+                }[m];
+            });
+        }
+
+        // 1. Pantalla Inicial (Selección de Rol)
+        function renderInitialScreen() {
+            appElement.innerHTML = `
+                <div class="text-center fade-in">
+                    <h1 class="text-4xl font-bold text-white mb-8">[ LA PRUEBA ]</h1>
+                    <p class="text-gray-400 mb-12">Elige tu rol. Solo puede haber un presentador.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-lg mx-auto">
+                        <button id="hostBtn" class="btn btn-danger">Modo Presentador</button>
+                        <button id="playerBtn" class="btn btn-secondary">Modo Jugador</button>
+                    </div>
+                </div>
+            `;
+            document.getElementById('hostBtn').addEventListener('click', joinAsHost);
+            document.getElementById('playerBtn').addEventListener('click', joinAsPlayer);
+        }
+
+        // 2. Vistas del HOST
+        function renderHostLobby(players) {
+            const playerCount = Object.keys(players).length;
+            appElement.innerHTML = `
+                <div class="text-center fade-in">
+                    <h1 class="text-3xl font-bold text-red-500 mb-6">SALA DE ESPERA</h1>
+                    <p class="text-gray-400 mb-8">Esperando jugadores. Proyecta esta pantalla.</p>
+                    <div class="max-w-md mx-auto mb-8">
+                        <h2 class="text-xl text-white mb-4">Jugadores Conectados: ${playerCount}</h2>
+                        <div id="player-list" class="space-y-2 max-h-60 overflow-y-auto">
+                            ${Object.values(players).map(p => 
+                                `<div class="player-list-item">${escapeHTML(p.name)}</div>`
+                            ).join('')}
+                        </div>
+                    </div>
+                    <button id="startBtn" class="btn btn-primary w-auto mx-auto" ${playerCount === 0 ? 'disabled' : ''}>
+                        Comenzar la Prueba
+                    </button>
+                </div>
+            `;
+            document.getElementById('startBtn').addEventListener('click', startNextRound);
+        }
+        
+        function renderHostRound(phrase, players) {
+            const survivors = Object.values(players).filter(p => !p.isEliminated);
+            const votes = survivors.filter(p => p.vote).length;
+
+            appElement.innerHTML = `
+                <div class="text-center fade-in max-w-3xl mx-auto">
+                    <p class="text-gray-500 text-lg mb-4">Ronda ${gameState.currentRound + 1}</p>
+                    <h1 class="text-4xl font-bold text-white mb-12 leading-relaxed">
+                        "${escapeHTML(phrase.text)}"
+                    </h1>
+                    <h2 class="text-2xl text-gray-400 mb-8">
+                        ¿Pesimista o Realista?
+                    </h2>
+                    <p class="text-xl text-white mb-4">Votos recibidos: ${votes} / ${survivors.length}</p>
+                    <div class="w-full bg-gray-800 rounded-full h-2.5 mb-8">
+                        <div class="bg-green-500 h-2.5 rounded-full" style="width: ${survivors.length > 0 ? (votes / survivors.length) * 100 : 0}%"></div>
+                    </div>
+                    <button id="revealBtn" class="btn btn-danger w-auto mx-auto">
+                        Finalizar Ronda y Revelar
+                    </button>
+                </div>
+            `;
+            document.getElementById('revealBtn').addEventListener('click', revealAnswers);
+        }
+
+        function renderHostReveal(phrase, players, answer) {
+            const survivors = Object.values(players).filter(p => !p.isEliminated);
+            const eliminated = Object.values(players).filter(p => p.isEliminated);
+            const isGameOver = survivors.length <= 1;
+
+            appElement.innerHTML = `
+                <div class="text-center fade-in max-w-4xl mx-auto">
+                    <h1 class="text-4xl font-bold mb-6 ${answer === 'r' ? 'text-green-500' : 'text-red-500'}">
+                        La respuesta era: ${answer === 'r' ? 'REALISTA' : 'PESIMISTA'}
+                    </h1>
+                    <p class="text-2xl text-white mb-10">"${escapeHTML(phrase.text)}"</p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div>
+                            <h2 class="text-2xl text-green-500 font-bold mb-4">SOBREVIVIENTES (${survivors.length})</h2>
+                            <div class="space-y-2 max-h-60 overflow-y-auto">
+                                ${survivors.map(p => `<div class="player-list-item survivor">${escapeHTML(p.name)}</div>`).join('')}
+                            </div>
+                        </div>
+                        <div>
+                            <h2 class="text-2xl text-red-500 font-bold mb-4">ELIMINADOS (${eliminated.length})</h2>
+                            <div class="space-y-2 max-h-60 overflow-y-auto">
+                                ${eliminated.map(p => `<div class="player-list-item eliminated">${escapeHTML(p.name)}</div>`).join('')}
+                            </div>
+                        </div>
+                    </div>
+
+                    <button id="nextBtn" class="btn btn-primary w-auto mx-auto mt-12">
+                        ${isGameOver ? 'Finalizar Juego' : 'Siguiente Ronda'}
+                    </button>
+                </div>
+            `;
+            document.getElementById('nextBtn').addEventListener('click', isGameOver ? triggerGameOver : startNextRound);
+        }
+        
+        function renderHostGameOver(winnerName) {
+            appElement.innerHTML = `
+                <div class="text-center fade-in">
+                    <h1 class="text-5xl font-bold text-white mb-6">LA PRUEBA HA TERMINADO</h1>
+                    ${winnerName ? 
+                        `<p class="text-3xl text-green-400 mb-12">Ganador: ${escapeHTML(winnerName)}</p>` :
+                        `<p class="text-3xl text-red-500 mb-12">Nadie ha sobrevivido.</p>`
+                    }
+                    <button id="resetBtn" class="btn btn-danger w-auto mx-auto">
+                        Reiniciar Sala
+                    </button>
+                </div>
+            `;
+            document.getElementById('resetBtn').addEventListener('click', initGame);
+        }
+
+
+        // 3. Vistas del JUGADOR
+        function renderPlayerLobby(players) {
+            const myName = players[localUserId]?.name || "Invitado"; // Usa localUserId
+            appElement.innerHTML = `
+                <div class="text-center fade-in max-w-md mx-auto">
+                    <h1 class="text-3xl font-bold text-white mb-4">SALA DE ESPERA</h1>
+                    <p class="text-lg text-gray-400 mb-8">Conectado como: <span class="text-green-400">${escapeHTML(myName)}</span></p>
+                    <p class="text-2xl text-gray-200">Esperando que el presentador inicie la prueba...</p>
+                    <div class="mt-8">
+                        <h3 class="text-lg text-gray-500 mb-3">Otros jugadores:</h3>
+                        <div class="space-y-2 max-h-40 overflow-y-auto">
+                            ${Object.values(players).filter(p => p.id !== localUserId).map(p => // Usa localUserId
+                                `<div class="player-list-item">${escapeHTML(p.name)}</div>`
+                            ).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderPlayerVote(phrase) {
+            appElement.innerHTML = `
+                <div class="text-center fade-in max-w-2xl mx-auto">
+                    <p class="text-gray-500 text-lg mb-4">Ronda ${gameState.currentRound + 1}</p>
+                    <h1 class="text-3xl font-bold text-white mb-10 leading-relaxed">
+                        "${escapeHTML(phrase.text)}"
+                    </h1>
+                    <p class="text-xl text-gray-300 mb-8">Tu decisión:</p>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <button id="voteP" class="btn btn-danger">Pesimista</button>
+                        <button id="voteR" class="btn btn-secondary">Realista</button>
+                    </div>
+                </div>
+            `;
+            document.getElementById('voteP').addEventListener('click', () => handleVote('p'));
+            document.getElementById('voteR').addEventListener('click', () => handleVote('r'));
+        }
+
+        function renderPlayerWait(message) {
+            appElement.innerHTML = `
+                <div class="text-center fade-in max-w-md mx-auto">
+                    <h1 class="text-3xl font-bold text-white mb-8">${escapeHTML(message)}</h1>
+                    <p class="text-2xl text-gray-400">Esperando al presentador...</p>
+                </div>
+            `;
+        }
+        
+        function renderPlayerResult(isCorrect) {
+             appElement.innerHTML = `
+                <div class="text-center fade-in max-w-md mx-auto">
+                    <h1 class="text-5xl font-bold ${isCorrect ? 'text-green-500' : 'text-red-500'} mb-8">
+                        ${isCorrect ? 'CORRECTO' : 'INCORRECTO'}
+                    </h1>
+                    <p class="text-2xl text-gray-300">
+                        ${isCorrect ? 'Sobrevives... por ahora.' : 'Un error te cuesta todo.'}
+                    </p>
+                    <p class="text-xl text-gray-500 mt-10">Esperando la siguiente ronda...</p>
+                </div>
+            `;
+        }
+        
+        function renderPlayerEliminated() {
+            appElement.innerHTML = `
+                <div class="text-center fade-in max-w-md mx-auto">
+                    <h1 class="text-6xl font-bold text-red-700 mb-8">ELIMINADO</h1>
+                    <p class="text-2xl text-gray-500">
+                        Observa en silencio.
+                    </p>
+                </div>
+            `;
+        }
+
+        function renderPlayerGameOver(winnerName) {
+            appElement.innerHTML = `
+                <div class="text-center fade-in">
+                    <h1 class="text-5xl font-bold text-white mb-6">LA PRUEBA HA TERMINADO</h1>
+                    ${winnerName ? 
+                        `<p class="text-3xl text-green-400 mb-12">Ganador: ${escapeHTML(winnerName)}</p>` :
+                        `<p class="text-3xl text-red-500 mb-12">Nadie ha sobrevivido.</p>`
+                    }
+                    <p class="text-gray-500">Puedes cerrar esta ventana.</p>
+                </div>
+            `;
+        }
+
+
+        // --- LÓGICA DEL JUEGO (HOST) ---
+        
+        function joinAsHost() {
+            isHost = true;
+            console.log("Uniéndose como Host");
+            // Comprobar si ya hay un host
+            onValue(ref(db, 'la-prueba/hostId'), (snapshot) => {
+                const currentHostId = snapshot.val();
+                if (currentHostId && currentHostId !== localUserId) { // Usa localUserId
+                    alert("¡Error! Ya hay un presentador en esta sala. Únete como jugador.");
+                    renderInitialScreen();
+                    isHost = false;
+                } else {
+                    // Tomar control como host
+                    set(ref(db, 'la-prueba/hostId'), localUserId); // Usa localUserId
+                    onDisconnect(ref(db, 'la-prueba/hostId')).remove();
+                    initGame();
+                    setupHostListener();
+                }
+            }, { onlyOnce: true });
+        }
+
+        // Inicializa o resetea el juego
+        function initGame() {
+            set(gameRef, {
+                state: 'lobby',
+                players: {},
+                currentRound: -1,
+                currentPhrase: null,
+                winner: null
+            });
+        }
+
+        // El Host inicia la siguiente ronda
+        function startNextRound() {
+            const currentRound = gameState.currentRound + 1;
+            if (currentRound >= PHRASES.length) {
+                // Se acabaron las frases
+                triggerGameOver();
+                return;
+            }
+
+            const newPhrase = PHRASES[currentRound];
+            
+            // Resetear votos de jugadores no eliminados
+            const players = gameState.players || {};
+            const updates = {};
+            Object.keys(players).forEach(pid => {
+                if (!players[pid].isEliminated) {
+                    updates[`/players/${pid}/vote`] = null;
+                    updates[`/players/${pid}/isCorrect`] = null;
+                }
             });
             
-            // Mostrar la pantalla activa
-            const activeScreen = document.getElementById(`${screenId}-screen`);
-            if (activeScreen) {
-                activeScreen.classList.add('active', 'fade-in');
-            }
-
-            // Lógica para mostrar/ocultar la lista de jugadores
-            if (screenId === 'game' || screenId === 'results' || screenId === 'gameOver') { // Añadido gameOver
-                playerListContainer.style.display = 'block';
-            } else {
-                playerListContainer.style.display = 'none';
-            }
+            updates['/state'] = 'round';
+            updates['/currentRound'] = currentRound;
+            updates['/currentPhrase'] = newPhrase;
+            
+            update(gameRef, updates);
         }
 
-        // --- LÓGICA DE UNIRSE Y CREAR JUEGO ---
-
-        hostButton.onclick = async () => {
-            // El host ya no necesita nombre, solo crea la partida.
-            if (!localUserId) {
-                joinError.textContent = "Error de autenticación. Inténtalo de nuevo.";
-                return;
-            }
-
-            isHost = true;
-            currentGameId = Math.random().toString(36).substring(2, 7).toUpperCase();
+        // El Host revela las respuestas
+        function revealAnswers() {
+            const answer = gameState.currentPhrase.answer;
+            const players = gameState.players || {};
+            const updates = {};
             
-            const gameRef = ref(db, `games/${currentGameId}`);
+            Object.keys(players).forEach(pid => {
+                const player = players[pid];
+                if (!player.isEliminated) {
+                    const isCorrect = player.vote === answer;
+                    updates[`/players/${pid}/isCorrect`] = isCorrect;
+                    if (!isCorrect) {
+                        updates[`/players/${pid}/isEliminated`] = true;
+                    }
+                }
+            });
+
+            updates['/state'] = 'reveal';
+            update(gameRef, updates);
+        }
+
+        // El Host termina el juego
+        function triggerGameOver() {
+            const players = Object.values(gameState.players || {});
+            const survivors = players.filter(p => !p.isEliminated);
+            const winnerName = survivors.length === 1 ? survivors[0].name : null;
+
+            update(gameRef, {
+                state: 'gameover',
+                winner: winnerName || (survivors.length > 1 ? "Empate de sobrevivientes" : "Nadie")
+            });
+        }
+
+
+        // --- LÓGICA DEL JUEGO (JUGADOR) ---
+
+        function joinAsPlayer() {
+            isHost = false;
+            const name = prompt("Introduce tu nombre (corto):", "Jugador");
+            if (!name) return; // Canceló
+
+            console.log(`Uniéndose como Jugador: ${name}`);
+            const playerRef = ref(db, `la-prueba/game/players/${localUserId}`); // Usa localUserId
             
-            const initialGameState = {
-                status: 'lobby',
-                hostId: localUserId, // Se usa localUserId
-                players: {} // El host no es un jugador, la lista empieza vacía.
-            };
-            
-            await set(gameRef, initialGameState);
-            listenToGame(currentGameId);
-        };
-
-        joinButton.onclick = async () => {
-            const name = playerNameInput.value.trim();
-            const gameId = gameIdInput.value.trim().toUpperCase();
-
-            if (!name) {
-                joinError.textContent = "Por favor, introduce tu identificador.";
-                return;
-            }
-            if (!gameId) {
-                joinError.textContent = "Por favor, introduce un ID de partida.";
-                return;
-            }
-            // Comprobación de localUserId en lugar de currentUser
-            if (!localUserId) {
-                joinError.textContent = "Error de autenticación. Inténtalo de nuevo.";
-                return;
-            }
-
-            const gameRef = ref(db, `games/${gameId}`);
-            const snapshot = await get(gameRef);
-
-            if (!snapshot.exists()) {
-                joinError.textContent = "Partida no encontrada.";
-                return;
-            }
-
-            const gameData = snapshot.val();
-
-            // Añadida comprobación de estado
-            if (gameData.status !== 'lobby') {
-                joinError.textContent = "Esta partida ya ha comenzado.";
-                return;
-            }
-
-            const playerRef = ref(db, `games/${gameId}/players/${localUserId}`); // Se usa localUserId
-            await set(playerRef, {
+            set(playerRef, {
+                id: localUserId, // Usa localUserId
                 name: name,
                 isEliminated: false,
-                vote: null
+                vote: null,
+                isCorrect: null
             });
+            
+            // Si el jugador cierra la pestaña, se elimina
+            onDisconnect(playerRef).remove();
+            
+            setupPlayerListener();
+        }
 
-            currentGameId = gameId;
-            isHost = false; // Solo el creador es host
-            listenToGame(gameId);
-        };
+        function handleVote(vote) {
+            // 'p' o 'r'
+            update(ref(db, `la-prueba/game/players/${localUserId}`), { // Usa localUserId
+                vote: vote
+            });
+            renderPlayerWait("Voto registrado.");
+        }
 
-        // --- LISTENER PRINCIPAL DEL JUEGO ---
 
-        function listenToGame(gameId) {
-            const gameRef = ref(db, `games/${gameId}`);
+        // --- LISTENERS (SINCRONIZACIÓN) ---
+
+        function setupHostListener() {
             onValue(gameRef, (snapshot) => {
-                const state = snapshot.val();
-                if (!state) {
-                    // El juego fue borrado (quizás el host se fue)
-                    console.log("La partida ha terminado o fue borrada.");
-                    showScreen('join'); // Vuelve a la pantalla de inicio
-                    // Resetea el estado local
-                    currentGameId = null;
-                    isHost = false;
-                    localGameState = null;
-                    if(gameTimerInterval) {
-                        clearTimeout(gameTimerInterval);
-                        gameTimerInterval = null;
-                    }
-                    joinError.textContent = "La partida ha terminado o fue borrada.";
+                if (!snapshot.exists()) {
+                    initGame(); // Si alguien borra la base, el host la recrea
+                    return;
+                }
+                gameState = snapshot.val();
+                const { state, players = {}, currentPhrase, winner } = gameState;
+
+                switch (state) {
+                    case 'lobby':
+                        renderHostLobby(players);
+                        break;
+                    case 'round':
+                        renderHostRound(currentPhrase, players);
+                        break;
+                    case 'reveal':
+                        renderHostReveal(currentPhrase, players, currentPhrase.answer);
+                        break;
+                    case 'gameover':
+                        renderHostGameOver(winner);
+                        break;
+                    default:
+                        console.log("Estado desconocido, reiniciando a lobby");
+                        initGame();
+                }
+            });
+        }
+
+        function setupPlayerListener() {
+            onValue(gameRef, (snapshot) => {
+                if (!snapshot.exists()) {
+                    appElement.innerHTML = `<h1 class="text-red-500 text-center">La sala ha sido cerrada por el presentador.</h1>`;
+                    setTimeout(renderInitialScreen, 3000);
                     return;
                 }
                 
-                localGameState = state; // Actualizar estado local
-                updateUI(state);
+                gameState = snapshot.val();
+                const { state, players = {}, currentPhrase, winner } = gameState;
+                const myData = players[localUserId]; // Usa localUserId
 
-                // El host maneja la lógica del juego
-                if (isHost && localUserId === state.hostId) { // Se usa localUserId
-                    handleHostLogic(state);
+                if (!myData) {
+                    // El host reinició el juego o fui eliminado por desconexión
+                    console.log("Datos no encontrados, volviendo al inicio");
+                    renderInitialScreen();
+                    return;
                 }
-            });
-        }
+                
+                if (myData.isEliminated && state !== 'gameover') {
+                    renderPlayerEliminated();
+                    return;
+                }
 
-        // --- ACTUALIZACIÓN DE LA UI ---
-
-        function updateUI(state) {
-            const players = state.players || {};
-            const playerArray = Object.entries(players).map(([id, data]) => ({ id, ...data }));
-            const activePlayers = playerArray.filter(p => !p.isEliminated);
-            const eliminatedPlayers = playerArray.filter(p => p.isEliminated);
-            
-            // Actualizar estado de pantalla
-            if (state.status === 'lobby') {
-                showScreen('lobby');
-                gameIdDisplay.textContent = currentGameId;
-                lobbyPlayerList.innerHTML = playerArray.map(p => `<li class="p-2">${p.name}</li>`).join('');
-                lobbyPlayerCount.textContent = playerArray.length;
-                startButton.style.display = (isHost && playerArray.length > 0) ? 'block' : 'none';
-            
-            } else if (state.status === 'playing') {
-                if (state.showResults) {
-                    showScreen('results');
-                    correctAnswer.textContent = state.currentPhrase.type;
-                    nextRoundTimer.textContent = state.timer;
-                    resultsSurvivors.textContent = activePlayers.length;
-                    resultsEliminated.textContent = eliminatedPlayers.length;
-                    
-                    const eliminatedThisRound = playerArray.filter(p => p.justEliminated);
-                    if (eliminatedThisRound.length > 0) {
-                        eliminationInfo.textContent = `Eliminados: ${eliminatedThisRound.map(p => p.name).join(', ')}`;
-                    } else {
-                        eliminationInfo.textContent = "Nadie ha sido eliminado. Por ahora.";
-                    }
-
-                } else {
-                    showScreen('game');
-                    roundNumber.textContent = state.currentRound;
-                    gameSurvivors.textContent = activePlayers.length;
-                    phraseText.textContent = state.currentPhrase.text;
-                    
-                    // Barra de tiempo
-                    const timerPercentage = (state.timer / ROUND_TIME) * 100;
-                    timerBar.style.width = `${timerPercentage}%`;
-
-                    // Lógica de votación (diferente para Host y Jugadores)
-                    const myData = players[localUserId]; // Se usa localUserId
-
-                    if (isHost) {
-                        // El Host (proyector) no vota, solo observa.
-                        voteContainer.style.display = 'none';
-                        waitContainer.style.display = 'block';
-                        waitContainer.firstElementChild.textContent = "Prueba en curso... Esperando decisiones.";
-                    
-                    } else if (myData) { // Comprobar si myData existe (es un jugador)
-                        if (myData.isEliminated) {
-                            voteContainer.style.display = 'none';
-                            waitContainer.style.display = 'block';
-                            waitContainer.firstElementChild.textContent = "PARTICIPANTE ELIMINADO.";
-                        } else if (myData.vote) {
-                            voteContainer.style.display = 'none';
-                            waitContainer.style.display = 'block';
-                            waitContainer.firstElementChild.textContent = "Decisión registrada. Esperando...";
+                switch (state) {
+                    case 'lobby':
+                        renderPlayerLobby(players);
+                        break;
+                    case 'round':
+                        if (myData.vote) {
+                            renderPlayerWait("Voto registrado.");
                         } else {
-                            voteContainer.style.display = 'block';
-                            waitContainer.style.display = 'none';
+                            renderPlayerVote(currentPhrase);
                         }
-                    } else {
-                        // Es un espectador o alguien que no se unió a tiempo
-                        voteContainer.style.display = 'none';
-                        waitContainer.style.display = 'block';
-                        waitContainer.firstElementChild.textContent = "Observando...";
-                    }
+                        break;
+                    case 'reveal':
+                        renderPlayerResult(myData.isCorrect);
+                        break;
+                    case 'gameover':
+                        renderPlayerGameOver(winner);
+                        break;
+                    default:
+                        renderPlayerLobby(players);
                 }
-
-            } else if (state.status === 'finished') {
-                showScreen('gameOver');
-                if (activePlayers.length === 1) {
-                    winnerInfo.textContent = `Superviviente: ${activePlayers[0].name}`;
-                } else if (activePlayers.length > 1) {
-                     // Esto ya no debería pasar, pero se mantiene como fallback
-                     winnerInfo.textContent = `Supervivientes: ${activePlayers.map(p => p.name).join(', ')}`;
-                } else {
-                    // Ahora es un resultado oficial
-                    winnerInfo.textContent = "NADIE HA SUPERADO LA PRUEBA.";
-                }
-                playAgainButton.style.display = isHost ? 'block' : 'none';
-            }
-
-            // Actualizar lista de jugadores persistente
-            gamePlayerList.innerHTML = playerArray.map(p => {
-                let classes = "player-item p-2 px-3 rounded-full text-sm transition-all";
-                classes += p.isEliminated ? " eliminated" : " bg-gray-800 border border-gray-700";
-                
-                // Mostrar borde de voto solo en resultados
-                if (state.showResults && !p.isEliminated) {
-                    classes += (p.vote === state.currentPhrase.type) ? " border-2 border-green-500" : " border-2 border-red-500";
-                }
-                // Mostrar indicador de "ha votado" antes de los resultados
-                if (!state.showResults && p.vote && !p.isEliminated) {
-                    classes += " voted";
-                }
-                
-                return `<li class="${classes}">${p.name}</li>`;
-            }).join('');
-        }
-
-        // --- LÓGICA DEL HOST (MANEJO DEL JUEGO) ---
-
-        startButton.onclick = () => {
-            if (!isHost) return;
-
-            const shuffledPhrases = [...PHRASE_LIST].sort(() => Math.random() - 0.5);
-            const initialPlayers = { ...localGameState.players };
-            Object.keys(initialPlayers).forEach(id => {
-                initialPlayers[id].isEliminated = false;
-                initialPlayers[id].vote = null;
-            });
-
-            const gameRef = ref(db, `games/${currentGameId}`);
-            update(gameRef, {
-                status: 'playing',
-                currentRound: 1,
-                phrases: shuffledPhrases,
-                currentPhrase: shuffledPhrases[0],
-                timer: ROUND_TIME,
-                showResults: false,
-                players: initialPlayers
-            });
-        };
-
-        function handleHostLogic(state) {
-            // Iniciar o detener el temporizador
-            if (state.status === 'playing' && !gameTimerInterval && !isTickInProgress) {
-                console.log("Iniciando bucle de timer");
-                // --- INICIO DE LA CORRECCIÓN ---
-                // Pasa el estado MÁS RECIENTE al primer tick
-                handleGameTick(state); 
-                // --- FIN DE LA CORRECCIÓN ---
-            } else if (state.status !== 'playing' && gameTimerInterval) {
-                console.log("Cancelando bucle de timer");
-                clearTimeout(gameTimerInterval);
-                gameTimerInterval = null;
-            }
-        }
-
-        // --- INICIO DE LA CORRECCIÓN ---
-        // La función ahora acepta el estado para forzar la frescura en el primer tick
-        async function handleGameTick(passedState) {
-            // El primer tick usa 'passedState' (fresco), los siguientes usan 'localGameState' (global)
-            const stateToUse = passedState || localGameState;
-            // --- FIN DE LA CORRECCIÓN ---
-
-            // Comprobación de seguridad
-            // --- CORRECCIÓN: Usar stateToUse ---
-            if (!isHost || !stateToUse || stateToUse.status !== 'playing') {
-                console.log("Tick: Deteniendo (no host o juego no en curso)");
-                isTickInProgress = false;
-                gameTimerInterval = null;
-                return; // Detener el bucle
-            }
-
-            // Bloqueo
-            if (isTickInProgress) {
-                console.log("Tick: Omitido (tick anterior en progreso)");
-                return;
-            }
-            isTickInProgress = true;
-            // --- CORRECCIÓN: Usar stateToUse ---
-            console.log("Tick: Iniciado", stateToUse.timer);
-
-            // Lógica del tick
-            const gameRef = ref(db, `games/${currentGameId}`);
-            // --- CORRECCIÓN: Usar stateToUse ---
-            let newTimer = stateToUse.timer - 1;
-
-            try {
-                // --- CORRECCIÓN: Usar stateToUse ---
-                if (stateToUse.showResults) {
-                    // Estamos en la pantalla de resultados
-                    if (newTimer <= 0) {
-                        console.log("Tick: Siguiente ronda");
-                        // --- CORRECCIÓN: Pasar estado ---
-                        await nextRound(stateToUse);
-                    } else {
-                        console.log("Tick: Actualizando timer (resultados)");
-                        await update(gameRef, { timer: newTimer });
-                    }
-                } else {
-                    // Estamos en la pantalla de votación
-                    // --- CORRECCIÓN: Usar stateToUse ---
-                    const players = stateToUse.players || {};
-                    const activePlayers = Object.values(players).filter(p => !p.isEliminated);
-                    
-                    const allVoted = activePlayers.length > 0 && activePlayers.every(p => p.vote !== null);
-
-                    if (newTimer <= 0 || allVoted) {
-                        // Calcular resultados
-                        console.log("Tick: Calculando resultados");
-                        // --- CORRECCIÓN: Pasar estado ---
-                        await calculateResults(stateToUse);
-                    } else {
-                        // Actualizando timer (juego)
-                        console.log("Tick: Actualizando timer (juego)");
-                        await update(gameRef, { timer: newTimer });
-                    }
-                }
-            } catch (error) {
-                console.error("Error durante el tick:", error);
-            }
-
-            // Quitar el bloqueo ANTES de programar el siguiente
-            isTickInProgress = false; 
-
-            // Programar siguiente tick
-            // Leer el estado global MÁS RECIENTE (actualizado por onValue)
-            // para decidir si continuar.
-            if (localGameState.status === 'playing') {
-                console.log("Tick: Programando siguiente tick");
-                // El siguiente tick SÍ usará el global 'localGameState'
-                gameTimerInterval = setTimeout(handleGameTick, 1000);
-            } else {
-                console.log("Tick: Fin del juego, no más ticks");
-                gameTimerInterval = null;
-            }
-        }
- 
-        // --- CORRECCIÓN: La función ahora acepta el estado ---
-        async function calculateResults(state) {
-            const players = { ...state.players };
-            const correctAnswer = state.currentPhrase.type;
-            let eliminatedCount = 0;
-            
-            const activePlayerIds = Object.keys(players).filter(id => !players[id].isEliminated);
-            // Los que votan null (se acaba el tiempo) también son eliminados
-            const wrongPlayerIds = activePlayerIds.filter(id => players[id].vote !== correctAnswer);
-            
-            // Lógica de eliminación:
-            // Si te equivocas, estás eliminado.
-            if (wrongPlayerIds.length > 0) {
-                eliminatedCount = wrongPlayerIds.length;
-                wrongPlayerIds.forEach(id => {
-                    players[id].isEliminated = true;
-                    players[id].justEliminated = true; // Flag temporal
-                });
-            }
-
-            // Limpiar flags temporales
-            Object.keys(players).forEach(id => {
-                if (!wrongPlayerIds.includes(id)) {
-                    players[id].justEliminated = false;
-                }
-            });
-
-            const activePlayersLeft = activePlayerIds.length - eliminatedCount;
-            let newStatus = 'playing';
-            if (activePlayersLeft <= 1) { // <= 1 (cubre 0 o 1 supervivientes)
-                newStatus = 'finished';
-            }
-
-            await update(ref(db, `games/${currentGameId}`), {
-                status: newStatus,
-                showResults: true,
-                timer: RESULTS_TIME,
-                players: players
             });
         }
 
-        // --- CORRECCIÓN: La función ahora acepta el estado ---
-        async function nextRound(state) {
-            let newRound = state.currentRound + 1;
-            let phrases = state.phrases;
-            
-            // Si el estado es 'finished' (0 o 1 jugador), termina.
-            if (state.status === 'finished') {
-                await update(ref(db, `games/${currentGameId}`), { status: 'finished' });
-                return;
-            }
-
-            // Si nos quedamos sin frases, pero el juego NO ha terminado...
-            if (newRound > phrases.length) {
-                // Baraja de nuevo y empieza un "nuevo ciclo"
-                console.log("Re-barajando frases");
-                newRound = 1;
-                phrases = [...PHRASE_LIST].sort(() => Math.random() - 0.5);
-            }
-
-            const players = { ...state.players };
-            Object.keys(players).forEach(id => {
-                players[id].vote = null; // Resetear votos
-                players[id].justEliminated = false; // Limpiar flag
-            });
-
-            await update(ref(db, `games/${currentGameId}`), {
-                currentRound: newRound,
-                currentPhrase: phrases[newRound - 1],
-                phrases: phrases, // Guarda la nueva lista barajada si es el caso
-                timer: ROUND_TIME,
-                showResults: false,
-                players: players
-            });
-        }
-
-        // --- ACCIONES DEL JUGADOR ---
-
-        pessimistButton.onclick = () => submitVote('pesimista');
-        realistButton.onclick = () => submitVote('realista');
-
-        function submitVote(vote) {
-            if (!currentGameId || !localUserId) return;
-            if (!localGameState || !localGameState.players) return; 
-            const myData = localGameState.players[localUserId];
-            
-            if (!myData || myData.isEliminated || myData.vote) return; // No votar si ya votó o está eliminado
-
-            const voteRef = ref(db, `games/${currentGameId}/players/${localUserId}/vote`);
-            set(voteRef, vote);
-        }
- 
-        // --- FIN DEL JUEGO / REINICIAR ---
-
-        playAgainButton.onclick = async () => {
-            if (!isHost) return;
-            
-            // Resetear el estado del juego a la sala de espera
-            const players = { ...localGameState.players };
-            Object.keys(players).forEach(id => {
-                players[id].isEliminated = false;
-                players[id].vote = null;
-                players[id].justEliminated = false;
-            });
-
-            await set(ref(db, `games/${currentGameId}`), {
-                status: 'lobby',
-                hostId: localUserId,
-                players: players
-            });
-        };
-
-        // Limpieza al cerrar la pestaña (opcional pero bueno)
-        window.addEventListener('beforeunload', () => {
-            if (!currentGameId || !localUserId) return;
-
-            const playerRef = ref(db, `games/${currentGameId}/players/${localUserId}`);
-            
-            // Solo quitar al jugador si no es el host.
-            if (!isHost) {
-                remove(playerRef); // Quitar al jugador
-            }
-
-            if (isHost) {
-                // Si el host se va, borrar el juego
-                const gameRef = ref(db, `games/${currentGameId}`);
-                remove(gameRef);
-            }
-        });
+        // Iniciar la aplicación
+        main();
 
     </script>
 </body>
