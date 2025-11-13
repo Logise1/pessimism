@@ -496,7 +496,10 @@
             // Iniciar o detener el temporizador
             if (state.status === 'playing' && !gameTimerInterval && !isTickInProgress) {
                 console.log("Iniciando bucle de timer");
-                handleGameTick(); 
+                // --- INICIO DE LA CORRECCIÓN ---
+                // Pasa el estado MÁS RECIENTE al primer tick
+                handleGameTick(state); 
+                // --- FIN DE LA CORRECCIÓN ---
             } else if (state.status !== 'playing' && gameTimerInterval) {
                 console.log("Cancelando bucle de timer");
                 clearTimeout(gameTimerInterval);
@@ -504,9 +507,16 @@
             }
         }
 
-        async function handleGameTick() {
+        // --- INICIO DE LA CORRECCIÓN ---
+        // La función ahora acepta el estado para forzar la frescura en el primer tick
+        async function handleGameTick(passedState) {
+            // El primer tick usa 'passedState' (fresco), los siguientes usan 'localGameState' (global)
+            const stateToUse = passedState || localGameState;
+            // --- FIN DE LA CORRECCIÓN ---
+
             // Comprobación de seguridad
-            if (!isHost || !localGameState || localGameState.status !== 'playing') {
+            // --- CORRECCIÓN: Usar stateToUse ---
+            if (!isHost || !stateToUse || stateToUse.status !== 'playing') {
                 console.log("Tick: Deteniendo (no host o juego no en curso)");
                 isTickInProgress = false;
                 gameTimerInterval = null;
@@ -519,36 +529,39 @@
                 return;
             }
             isTickInProgress = true;
-            console.log("Tick: Iniciado", localGameState.timer);
+            // --- CORRECCIÓN: Usar stateToUse ---
+            console.log("Tick: Iniciado", stateToUse.timer);
 
             // Lógica del tick
             const gameRef = ref(db, `games/${currentGameId}`);
-            let newTimer = localGameState.timer - 1;
+            // --- CORRECCIÓN: Usar stateToUse ---
+            let newTimer = stateToUse.timer - 1;
 
             try {
-                if (localGameState.showResults) {
+                // --- CORRECCIÓN: Usar stateToUse ---
+                if (stateToUse.showResults) {
                     // Estamos en la pantalla de resultados
                     if (newTimer <= 0) {
                         console.log("Tick: Siguiente ronda");
-                        await nextRound();
+                        // --- CORRECCIÓN: Pasar estado ---
+                        await nextRound(stateToUse);
                     } else {
                         console.log("Tick: Actualizando timer (resultados)");
                         await update(gameRef, { timer: newTimer });
                     }
                 } else {
                     // Estamos en la pantalla de votación
-                    const players = localGameState.players || {};
+                    // --- CORRECCIÓN: Usar stateToUse ---
+                    const players = stateToUse.players || {};
                     const activePlayers = Object.values(players).filter(p => !p.isEliminated);
                     
-                    // --- INICIO DE LA CORRECCIÓN ---
-                    // Solo_comprobar 'allVoted' si hay jugadores activos
                     const allVoted = activePlayers.length > 0 && activePlayers.every(p => p.vote !== null);
-                    // --- FIN DE LA CORRECCIÓN ---
 
                     if (newTimer <= 0 || allVoted) {
                         // Calcular resultados
                         console.log("Tick: Calculando resultados");
-                        await calculateResults();
+                        // --- CORRECCIÓN: Pasar estado ---
+                        await calculateResults(stateToUse);
                     } else {
                         // Actualizando timer (juego)
                         console.log("Tick: Actualizando timer (juego)");
@@ -563,8 +576,11 @@
             isTickInProgress = false; 
 
             // Programar siguiente tick
+            // Leer el estado global MÁS RECIENTE (actualizado por onValue)
+            // para decidir si continuar.
             if (localGameState.status === 'playing') {
                 console.log("Tick: Programando siguiente tick");
+                // El siguiente tick SÍ usará el global 'localGameState'
                 gameTimerInterval = setTimeout(handleGameTick, 1000);
             } else {
                 console.log("Tick: Fin del juego, no más ticks");
@@ -572,8 +588,8 @@
             }
         }
  
-        async function calculateResults() {
-            const state = localGameState;
+        // --- CORRECCIÓN: La función ahora acepta el estado ---
+        async function calculateResults(state) {
             const players = { ...state.players };
             const correctAnswer = state.currentPhrase.type;
             let eliminatedCount = 0;
@@ -613,8 +629,8 @@
             });
         }
 
-        async function nextRound() {
-            const state = localGameState;
+        // --- CORRECCIÓN: La función ahora acepta el estado ---
+        async function nextRound(state) {
             let newRound = state.currentRound + 1;
             let phrases = state.phrases;
             
