@@ -1,0 +1,1162 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Título revertido -->
+    <title>Pesimismo Creativo</title>
+    <!-- Carga de Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Carga de las nuevas fuentes (Oswald + Inter) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
+    
+    <!-- Estilos actualizados -->
+    <style>
+        body {
+            /* Fuente base cambiada a Inter */
+            font-family: 'Inter', sans-serif;
+            /* Mismo fondo de gradiente */
+            background-color: #0f0c29;
+            background-image: linear-gradient(135deg, #302364, #1f1a3a, #0f0c29);
+        }
+        /* Clase para los nuevos títulos (Oswald) */
+        .font-title {
+            font-family: 'Oswald', sans-serif;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+        /* Clase para las tarjetas con efecto cristal (sin cambios, es bueno) */
+        .card {
+            background-color: rgba(23, 27, 41, 0.7); /* bg-gray-800/70 */
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 0.75rem; /* rounded-xl */
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+        /* Ocultar pantallas */
+        .hidden {
+            display: none;
+        }
+        /* Spinner (sin cambios) */
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        /* Temporizador con nueva fuente (Oswald) */
+        .timer {
+            font-family: 'Oswald', sans-serif;
+            font-size: 4rem;
+            line-height: 1;
+            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        /* Animación para botones (sin cambios, es bueno) */
+        .btn {
+            transition: transform 0.15s ease-out, background-color 0.2s;
+        }
+        .btn:hover {
+            transform: scale(1.03);
+        }
+        .btn:active {
+            transform: scale(0.98);
+        }
+        /* Animación de pulso para puntuaciones (sin cambios) */
+        .score-pulse {
+            animation: pulse-light 1.5s infinite;
+        }
+        @keyframes pulse-light {
+            0%, 100% { opacity: 1; text-shadow: 0 0 5px currentColor; }
+            50% { opacity: 0.8; text-shadow: 0 0 15px currentColor; }
+        }
+    </style>
+</head>
+<body class="text-white h-screen flex items-center justify-center overflow-hidden p-4">
+
+    <!-- Pantalla de Carga Inicial -->
+    <div id="screen-loading" class="text-center">
+        <div class="spinner mx-auto mb-4"></div>
+        <p class="text-xl">Conectando...</p>
+    </div>
+
+    <!-- Div para Mensajes de Error -->
+    <div id="error-message" class="hidden fixed top-5 right-5 bg-red-600 text-white p-4 rounded-lg shadow-lg z-50">
+        <span id="error-text" class="font-bold"></span>
+    </div>
+
+    <!-- Pantalla de Unirse/Crear Partida -->
+    <div id="screen-join" class="hidden w-full max-w-md p-8 card">
+        <!-- Título revertido, color cambiado a "amber" -->
+        <h1 class="font-title text-5xl text-amber-400 mb-6 text-center">Pesimismo Creativo</h1>
+        <p class="text-gray-300 mb-8 text-center text-lg">La desgracia ama la compañía. Únete.</p>
+        <div class="mb-4">
+            <label for="name-input" class="block text-sm font-medium text-gray-300 mb-2">Tu Nombre</label>
+            <input type="text" id="name-input" class="w-full px-4 py-3 bg-gray-900/50 border border-gray-700 rounded-lg text-white text-lg focus:outline-none focus:ring-2 focus:ring-cyan-500" placeholder="Juan Desgracias">
+        </div>
+        <div class="mb-6">
+            <label for="lobby-code-input" class="block text-sm font-medium text-gray-300 mb-2">Código de la Sala</label>
+            <input type="text" id="lobby-code-input" maxlength="4" class="w-full px-4 py-3 bg-gray-900/50 border border-gray-700 rounded-lg text-white uppercase text-center text-2xl tracking-widest font-bold focus:outline-none focus:ring-2 focus:ring-cyan-500" placeholder="ABCD">
+        </div>
+        <!-- Texto de botones revertido -->
+        <button id="btn-join-lobby" class="btn w-full bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-3 px-6 rounded-lg mb-3 text-lg">Unirse a la Sala</button>
+        <button id="btn-create-lobby" class="btn w-full bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 px-6 rounded-lg text-lg">Crear Sala Nueva</button>
+    </div>
+
+    <!-- Pantalla de Lobby (Sala de Espera) -->
+    <div id="screen-lobby" class="hidden w-full max-w-lg p-8 card text-center">
+        <h2 class="font-title text-4xl text-amber-400 mb-4">Sala de Espera</h2>
+        <p class="text-gray-400 mb-6">Comparte este código con tus amigos:</p>
+        <div class="bg-gray-900/50 border-2 border-dashed border-gray-700 rounded-lg p-4 mb-6">
+            <span id="lobby-code-display" class="font-title text-6xl font-extrabold tracking-widest text-amber-400"></span>
+        </div>
+        <h3 class="text-xl font-bold mb-4">Jugadores Conectados:</h3>
+        <div id="player-list" class="grid grid-cols-2 gap-4 mb-8 min-h-[100px]">
+            <!-- Los jugadores se listarán aquí -->
+        </div>
+        <button id="btn-start-game" class="hidden btn w-full bg-red-600 hover:bg-red-500 text-white font-bold py-3 px-6 rounded-lg text-xl uppercase">
+            Empezar Partida
+        </Cbutton>
+        <p id="start-game-warning" class="hidden mt-4 text-yellow-400 font-semibold">Necesitas un número par de jugadores (mín. 2).</p>
+    </div>
+
+    <!-- Pantalla de Asignación de Roles -->
+    <div id="screen-roles" class="hidden text-center p-8">
+        <div class="card p-10 max-w-lg mx-auto">
+            <p class="text-xl text-gray-300 mb-2">Tu pareja es:</p>
+            <h2 id="partner-name" class="font-title text-5xl text-cyan-400 mb-8"></h2>
+            
+            <p class="text-xl text-gray-300 mb-2">Tu rol esta ronda:</p>
+            <!-- El texto se asignará desde JS -->
+            <h1 id="role-name" class="font-title text-7xl font-extrabold text-red-500"></h1>
+            
+            <p class="text-gray-400 mt-8 text-lg">Prepárate...</p>
+        </div>
+        <!-- Botón solo para el host -->
+        <button id="btn-start-round" class="hidden btn mt-8 bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-3 px-6 rounded-lg text-xl uppercase">
+            Comenzar Ronda
+        </button>
+    </div>
+
+    <!-- Pantalla de Escritura (Apocalíptico) -->
+    <div id="screen-writing-apocalyptic" class="hidden w-full max-w-2xl p-8 card">
+        <div class="text-center mb-6">
+            <span class="font-title text-red-500 text-4xl">Rol: El Apocalíptico</span>
+            <p class="text-gray-300 text-lg mt-2">Describe el peor escenario posible.</p>
+        </div>
+        <div id="timer-apocalyptic" class="timer text-center text-red-500 mb-6">30</div>
+        <div class="bg-gray-900/50 p-6 rounded-lg shadow-inner mb-6">
+            <p class="text-gray-400 mb-2 uppercase text-sm font-bold tracking-wider">Escenario:</p>
+            <h3 id="scenario-text-apocalyptic" class="text-2xl font-semibold"></h3>
+        </div>
+        <textarea id="apocalyptic-textarea" class="w-full h-40 px-4 py-3 bg-gray-900/50 border border-gray-700 rounded-lg text-white text-base focus:outline-none focus:ring-2 focus:ring-red-500" placeholder="El mundo se acaba porque..."></textarea>
+        <button id="btn-submit-apocalyptic" class="btn w-full mt-4 bg-red-600 hover:bg-red-500 text-white font-bold py-3 px-6 rounded-lg text-xl uppercase">Enviar Predicción</button>
+    </div>
+
+    <!-- Pantalla de Escritura (Realista) -->
+    <div id="screen-writing-realist" class="hidden w-full max-w-2xl p-8 card">
+        <div class="text-center mb-6">
+            <span class="font-title text-cyan-500 text-4xl">Rol: El Realista</span>
+            <p class="text-gray-300 text-lg mt-2">Tu pareja ha predicho lo peor. ¡Arréglalo!</p>
+        </div>
+        <div id="timer-realist" class="timer text-center text-cyan-500 mb-6">30</div>
+        <div class="bg-gray-900/50 p-6 rounded-lg shadow-inner mb-6">
+            <p class="text-gray-400 mb-2 uppercase text-sm font-bold tracking-wider">Escenario:</p>
+            <h3 id="scenario-text-realist" class="text-xl font-semibold mb-4"></h3>
+            <hr class="border-gray-700 my-4">
+            <p class="text-red-400 mb-2 uppercase text-sm font-bold tracking-wider">La predicción Apocalíptica:</p>
+            <blockquote id="apocalyptic-response-text" class="text-lg italic text-white border-l-4 border-red-500 pl-4"></blockquote>
+        </div>
+        <textarea id="realist-textarea" class="w-full h-40 px-4 py-3 bg-gray-900/50 border border-gray-700 rounded-lg text-white text-base focus:outline-none focus:ring-2 focus:ring-cyan-500" placeholder="Bueno, no es para tanto, en realidad..."></textarea>
+        <button id="btn-submit-realist" class="btn w-full mt-4 bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-3 px-6 rounded-lg text-xl uppercase">Enviar Corrección</button>
+    </div>
+
+    <!-- Pantalla de Espera (para jugadores que no escriben o ya terminaron) -->
+    <div id="screen-waiting" class="hidden text-center p-8">
+        <div class="spinner mx-auto mb-6"></div>
+        <h2 class="font-title text-4xl mb-4">Procesando respuestas...</h2>
+        <p id="waiting-text" class="text-xl text-gray-300"></p>
+    </div>
+
+    <!-- Pantalla de Votación -->
+    <div id="screen-voting" class="hidden w-full max-w-4xl p-8 card">
+        <h2 class="font-title text-5xl text-amber-400 text-center mb-2">Votación</h2>
+        <p class="text-gray-300 text-center text-lg mb-6">Elige las mejores (o peores) respuestas. No puedes votar por tu propio equipo.</p>
+        <div id="timer-voting" class="timer text-center text-amber-400 mb-6">60</div>
+        
+        <div id="voting-options-container" class="space-y-6 max-h-[60vh] overflow-y-auto p-2 rounded-lg bg-black/20">
+            <!-- Las opciones de votación se generarán aquí -->
+        </div>
+    </div>
+
+    <!-- Pantalla de Puntuaciones -->
+    <div id="screen-scores" class="hidden w-full max-w-2xl p-8 text-center">
+        <div class="card p-8">
+            <h2 class="font-title text-6xl text-amber-400 mb-8">Puntuaciones</h2>
+            
+            <h3 class="font-title text-3xl text-cyan-400 mb-3">Puntos de esta Ronda</h3>
+            <div id="round-scores-list" class="space-y-2 mb-8">
+                <!-- Puntuaciones de la ronda -->
+            </div>
+
+            <hr class="border-gray-700 my-8">
+
+            <h3 class="font-title text-3xl text-cyan-400 mb-3">Puntuación Total</h3>
+            <div id="total-scores-list" class="space-y-3">
+                <!-- Puntuaciones totales -->
+            </div>
+        </div>
+        
+        <button id="btn-next-round" class="hidden btn mt-8 bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-3 px-6 rounded-lg text-xl uppercase">
+            Siguiente Ronda
+        </button>
+        <button id="btn-end-game" class="hidden btn mt-8 bg-red-600 hover:bg-red-500 text-white font-bold py-3 px-6 rounded-lg text-xl uppercase">
+            Terminar Partida
+        </button>
+    </div>
+
+    <!-- Pantalla de Fin de Partida -->
+    <div id="screen-game-over" class="hidden w-full max-w-2xl p-8 text-center">
+        <div class="card p-8">
+            <h2 class="font-title text-5xl text-amber-400 mb-6">Partida Terminada</h2>
+            <h3 class="text-2xl font-semibold text-gray-300 mb-4">El equipo ganador es...</h3>
+            <h1 id="winner-team-name" class="font-title text-6xl text-cyan-400 mb-8 score-pulse"></h1>
+            
+            <h3 class="font-title text-3xl text-gray-400 mb-4">Marcador Final</h3>
+            <div id="final-scores-list" class="space-y-3">
+                <!-- Puntuaciones finales -->
+            </div>
+        </div>
+        <button id="btn-play-again" class="hidden btn mt-8 bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-3 px-6 rounded-lg text-xl uppercase">
+            Jugar Otra Vez
+        </button>
+    </div>
+
+
+    <!-- Script de Firebase y Lógica del Juego -->
+    <script type="module">
+        // Importar funciones de Firebase
+        import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getDatabase, ref, set, get, onValue, off, onDisconnect, runTransaction, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
+
+        // --- CONFIGURACIÓN DE FIREBASE (PROVISTA POR EL USUARIO) ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyDrYwIMyL2y7yHXxQF4yjtokPOE2QyHC5I",
+            authDomain: "pesimism-2fdad.firebaseapp.com",
+            databaseURL: "https://pesimism-2fdad-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "pesimism-2fdad",
+            storageBucket: "pesimism-2fdad.firebasestorage.app",
+            messagingSenderId: "859660712236",
+            appId: "1:859660712236:web:e09ac663d189f550d2d489",
+            measurementId: "G-TYE4V0P8XB"
+        };
+        // ---------------------------------------------------------
+
+        // --- VARIABLES GLOBALES DEL JUEGO ---
+        let app, db;
+        let currentUserId = null;
+        let currentLobbyCode = null;
+        let isHost = false;
+        let localGameState = {};
+        let currentLobbyListener = null;
+        let currentTimer = null; // Temporizador visual (setInterval)
+        let hostStateTimer = null; // Temporizador maestro del Host (setTimeout)
+        let myTeamId = null;
+        let pendingPessimistVote = false;
+        let pendingModeratorVote = false;
+
+        // --- Carga de escenarios desde JSON ---
+        // URL ACTUALIZADA
+        const SCENARIOS_URL = "https://logise1.github.io/pessimism/escenarios.json";
+        
+        let allScenarios = []; // Aquí guardaremos los escenarios cargados
+
+        // --- ELEMENTOS DEL DOM ---
+        const screens = {
+            loading: document.getElementById('screen-loading'),
+            join: document.getElementById('screen-join'),
+            lobby: document.getElementById('screen-lobby'),
+            roles: document.getElementById('screen-roles'),
+            writingApocalyptic: document.getElementById('screen-writing-apocalyptic'),
+            writingRealist: document.getElementById('screen-writing-realist'),
+            waiting: document.getElementById('screen-waiting'),
+            voting: document.getElementById('screen-voting'),
+            scores: document.getElementById('screen-scores'),
+            gameOver: document.getElementById('screen-game-over'),
+        };
+        const errorMessageDiv = document.getElementById('error-message');
+        const errorText = document.getElementById('error-text');
+        
+        const nameInput = document.getElementById('name-input');
+        const lobbyCodeInput = document.getElementById('lobby-code-input');
+        const btnJoinLobby = document.getElementById('btn-join-lobby');
+        const btnCreateLobby = document.getElementById('btn-create-lobby');
+        
+        const lobbyCodeDisplay = document.getElementById('lobby-code-display');
+        const playerList = document.getElementById('player-list');
+        const btnStartGame = document.getElementById('btn-start-game');
+        const startGameWarning = document.getElementById('start-game-warning');
+
+        // --- INICIALIZACIÓN DE FIREBASE ---
+        
+        window.onload = async () => {
+            try {
+                const existingApp = getApps().find(app => app.name === '[DEFAULT]');
+                if (existingApp) {
+                    app = existingApp;
+                } else {
+                    app = initializeApp(firebaseConfig);
+                }
+                db = getDatabase(app);
+
+                currentUserId = 'user_' + Math.random().toString(36).substring(2, 9);
+                console.log("Usuario local (sin auth):", currentUserId);
+                
+                await loadScenarios();
+                
+                showScreen('join');
+
+            } catch (err) {
+                console.error("Error en la inicialización:", err);
+                handleError(err);
+                showScreen('join');
+            }
+        };
+
+        async function loadScenarios() {
+            console.log("Cargando escenarios desde:", SCENARIOS_URL);
+            try {
+                // Se elimina la comprobación de "TU_USUARIO"
+                const response = await fetch(SCENARIOS_URL);
+                if (!response.ok) {
+                    throw new Error(`Error al cargar escenarios: ${response.statusText}`);
+                }
+                allScenarios = await response.json();
+                if (!Array.isArray(allScenarios) || allScenarios.length === 0) {
+                    throw new Error("El JSON de escenarios está vacío o no es un array.");
+                }
+                console.log(`Cargados ${allScenarios.length} escenarios.`);
+            } catch (err) {
+                console.error(err);
+                handleError({ message: "No se pudieron cargar historias. Usando historias de emergencia." }, false);
+                // Fallback por si falla el fetch
+                allScenarios = [
+                    "Abres TikTok y todos los vídeos son de tus padres bailando.",
+                    "Tu sombra empieza a hablarte.",
+                    "Te despiertas y eres un caracol.",
+                    "El 'lag' de tu videojuego se traslada a la vida real.",
+                    "Recibes 999+ notificaciones en tu móvil."
+                ];
+            }
+        }
+
+        // --- MANEJO DE PANTALLAS Y ERRORES ---
+
+        function showScreen(screenId) {
+            Object.values(screens).forEach(screen => screen.classList.add('hidden'));
+            if (screens[screenId]) {
+                screens[screenId].classList.remove('hidden');
+            } else {
+                console.error("No se encontró la pantalla:", screenId);
+            }
+        }
+
+        function handleError(error, autoDismiss = true) {
+            console.error("Error:", error);
+            errorText.textContent = `Error: ${error.message || error}`;
+            errorMessageDiv.classList.remove('hidden');
+            if (autoDismiss) {
+                setTimeout(() => {
+                    errorMessageDiv.classList.add('hidden');
+                }, 5000);
+            }
+        }
+
+        // --- LÓGICA DE LOBBY ---
+
+        btnCreateLobby.addEventListener('click', () => {
+            const playerName = nameInput.value.trim();
+            if (!playerName) {
+                handleError({ message: "Por favor, introduce tu nombre." });
+                return;
+            }
+            if (!currentUserId) { 
+                handleError({ message: "No se pudo generar un ID de usuario." });
+                return;
+            }
+
+            isHost = true;
+            console.log("Este cliente ES el host.");
+            currentLobbyCode = generateLobbyCode(4);
+            const lobbyRef = ref(db, `games/${currentLobbyCode}`);
+            const newGame = {
+                host: currentUserId,
+                gameState: "LOBBY",
+                createdAt: serverTimestamp(),
+                players: {
+                    [currentUserId]: { name: playerName }
+                },
+                currentRound: 0,
+                scenarios: shuffleArray([...allScenarios])
+            };
+
+            set(lobbyRef, newGame)
+                .then(() => joinLobby(currentLobbyCode))
+                .catch(handleError);
+        });
+
+        btnJoinLobby.addEventListener('click', () => {
+            const playerName = nameInput.value.trim();
+            const lobbyCode = lobbyCodeInput.value.trim().toUpperCase();
+
+            if (!playerName) {
+                handleError({ message: "Por favor, introduce tu nombre." });
+                return;
+            }
+            if (!lobbyCode) {
+                handleError({ message: "Por favor, introduce un código de sala." });
+                return;
+            }
+            if (!currentUserId) {
+                handleError({ message: "No se pudo generar un ID de usuario." });
+                return;
+            }
+
+            console.log(`Intentando unirse a la sala: ${lobbyCode}`);
+
+            isHost = false;
+            console.log("Este cliente NO es el host.");
+            const lobbyRef = ref(db, `games/${lobbyCode}`);
+            
+            get(lobbyRef).then(snapshot => {
+                if (snapshot.exists()) {
+                    const game = snapshot.val();
+                    const gameState = game.gameState;
+                    if (gameState !== "LOBBY") {
+                        handleError({ message: "Esta partida ya ha comenzado." });
+                        return;
+                    }
+                    if (!game.players[game.host]) {
+                        handleError({ message: "El host se ha desconectado. No se puede unir." });
+                        return;
+                    }
+
+                    set(ref(db, `games/${lobbyCode}/players/${currentUserId}`), { name: playerName })
+                        .then(() => joinLobby(lobbyCode))
+                        .catch(handleError);
+                } else {
+                    console.log(`La sala ${lobbyCode} no existe.`);
+                    handleError({ message: "No se encontró esa sala. ¿Código correcto?" });
+                }
+            }).catch(err => {
+                console.error("Error al intentar obtener la sala:", err);
+                handleError({ message: `Error al unirse: ${err.message}.` });
+            });
+        });
+
+        function joinLobby(lobbyCode) {
+            currentLobbyCode = lobbyCode;
+            
+            const playerRef = ref(db, `games/${lobbyCode}/players/${currentUserId}`);
+            onDisconnect(playerRef).remove();
+            
+            if (currentLobbyListener) {
+                off(currentLobbyListener);
+            }
+            const lobbyRef = ref(db, `games/${lobbyCode}`);
+            currentLobbyListener = onValue(lobbyRef, handleGameStateChange);
+        }
+
+        function generateLobbyCode(length) {
+            const chars = 'ABCDEFGHIJKLMNPQRSTUVWXYZ123456789'; // Quitadas O y 0
+            let result = '';
+            for (let i = 0; i < length; i++) {
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return result;
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        // --- MOTOR PRINCIPAL DEL JUEGO (STATE MACHINE) ---
+
+        function handleGameStateChange(snapshot) {
+            if (!snapshot.exists()) {
+                handleError({ message: "La sala ha sido cerrada por el host." });
+                showScreen('join');
+                if (currentLobbyListener) off(currentLobbyListener);
+                if (hostStateTimer) clearTimeout(hostStateTimer);
+                hostStateTimer = null;
+                currentLobbyCode = null;
+                isHost = false;
+                return;
+            }
+
+            localGameState = snapshot.val();
+            const state = localGameState.gameState;
+
+            if (state === "VOTING") {
+                const round = localGameState.currentRound;
+                const votes = localGameState.votes?.[`round_${round}`]?.[currentUserId] || {};
+                if (votes.creativePessimist) pendingPessimistVote = false;
+                if (votes.persuasiveModerator) pendingModeratorVote = false;
+            } else {
+                pendingPessimistVote = false; 
+                pendingModeratorVote = false;
+            }
+
+            if (localGameState.players && localGameState.players[currentUserId]) {
+                myTeamId = localGameState.players[currentUserId].team || null;
+            }
+
+            if (currentTimer && state !== "VOTING") {
+                clearInterval(currentTimer);
+                currentTimer = null;
+            }
+
+            if (isHost) {
+                console.log(`Host detecta estado: ${state}`);
+                
+                const round = localGameState.currentRound;
+                const teams = localGameState.teams || {};
+                const numTeams = Object.keys(teams).length;
+                const players = localGameState.players || {};
+                const numPlayers = Object.keys(players).length;
+
+                if (state === "APOCALYPTIC_WRITING" && numTeams > 0) {
+                    const responses = localGameState.responses?.[`round_${round}`] || {};
+                    let apocResponsesCount = 0;
+                    for (const teamId in responses) {
+                        if (responses[teamId].apocalyptic) apocResponsesCount++;
+                    }
+
+                    if (apocResponsesCount >= numTeams) {
+                        console.log("Host: Todos los Apocalípticos han respondido. Avanzando.");
+                        if (hostStateTimer) clearTimeout(hostStateTimer);
+                        hostStateTimer = null;
+                        set(ref(db, `games/${currentLobbyCode}/gameState`), "REALIST_WRITING").catch(handleError);
+                        return;
+                    }
+                } 
+                else if (state === "REALIST_WRITING" && numTeams > 0) {
+                    const responses = localGameState.responses?.[`round_${round}`] || {};
+                    let realistResponsesCount = 0;
+                    for (const teamId in responses) {
+                        if (responses[teamId].realist) realistResponsesCount++;
+                    }
+
+                    if (realistResponsesCount >= numTeams) {
+                        console.log("Host: Todos los Realistas han respondido. Avanzando.");
+                        if (hostStateTimer) clearTimeout(hostStateTimer);
+                        hostStateTimer = null;
+                        set(ref(db, `games/${currentLobbyCode}/gameState`), "VOTING").catch(handleError);
+                        return;
+                    }
+                }
+                else if (state === "VOTING" && numPlayers > 0) {
+                    const votes = localGameState.votes?.[`round_${round}`] || {};
+                    const numVotes = Object.keys(votes).length;
+
+                    if (numVotes >= numPlayers) {
+                        console.log("Host: Todos han votado. Calculando puntuaciones.");
+                        if (hostStateTimer) clearTimeout(hostStateTimer);
+                        hostStateTimer = null;
+                        calculateScoresAndAdvance();
+                        return;
+                    }
+                }
+
+                if (hostStateTimer) {
+                    console.log("Host: El temporizador maestro ya está en marcha.");
+                } else {
+                    let duration = 0;
+                    let nextState = null;
+                    let nextAction = "set";
+
+                    if (state === "APOCALYPTIC_WRITING") {
+                        duration = 30000;
+                        nextState = "REALIST_WRITING";
+                    } else if (state === "REALIST_WRITING") {
+                        duration = 30000;
+                        nextState = "VOTING";
+                    } else if (state === "VOTING") {
+                        duration = 60000;
+                        nextState = "SCORES";
+                        nextAction = "calculate";
+                    }
+
+                    if (duration > 0) {
+                        console.log(`Host iniciando temporizador: ${duration/1000}s para -> ${nextState || 'calculate'}`);
+                        hostStateTimer = setTimeout(() => {
+                            console.log(`Host: Se acabó el tiempo para ${state}. Avanzando...`);
+                            hostStateTimer = null;
+                            
+                            get(ref(db, `games/${currentLobbyCode}/gameState`)).then(snapshot => {
+                                if (snapshot.val() === state) {
+                                    if (nextAction === "calculate") {
+                                        calculateScoresAndAdvance();
+                                    } else {
+                                        set(ref(db, `games/${currentLobbyCode}/gameState`), nextState).catch(handleError);
+                                    }
+                                } else {
+                                    console.log("Host: El estado ya cambió, no se hace nada.");
+                                }
+                            }).catch(handleError);
+                        }, duration);
+                    }
+                }
+            }
+
+            switch (state) {
+                case "LOBBY":
+                    updateLobbyUI();
+                    showScreen('lobby');
+                    break;
+                case "ROLES":
+                    updateRolesUI();
+                    showScreen('roles');
+                    break;
+                case "APOCALYPTIC_WRITING":
+                    showWritingScreen('APOCALYPTIC');
+                    break;
+                case "REALIST_WRITING":
+                    showWritingScreen('REALIST');
+                    break;
+                case "VOTING":
+                    showVotingScreen();
+                    break;
+                case "SCORES":
+                    updateScoresUI();
+                    showScreen('scores');
+                    break;
+                case "GAME_OVER":
+                    updateGameOverUI();
+                    showScreen('gameOver');
+                    break;
+                default:
+                    console.warn("Estado del juego desconocido:", state);
+                    showScreen('join');
+            }
+        }
+
+        // --- LÓGICA DE PANTALLAS DE JUEGO ---
+
+        function updateLobbyUI() {
+            lobbyCodeDisplay.textContent = currentLobbyCode;
+            const players = localGameState.players || {};
+            const playerCount = Object.keys(players).length;
+            
+            playerList.innerHTML = '';
+            // Se eliminan los emojis
+            Object.values(players).forEach((player, index) => {
+                const playerEl = document.createElement('div');
+                playerEl.className = "bg-gray-900/50 p-3 rounded-lg text-white font-medium text-lg";
+                playerEl.textContent = player.name; // Solo el nombre
+                playerList.appendChild(playerEl);
+            });
+
+            if (isHost) {
+                btnStartGame.classList.remove('hidden');
+                const isEven = playerCount % 2 === 0;
+                const minPlayers = playerCount >= 2;
+                if (isEven && minPlayers) {
+                    btnStartGame.disabled = false;
+                    btnStartGame.classList.remove("opacity-50", "cursor-not-allowed");
+                    startGameWarning.classList.add('hidden');
+                } else {
+                    btnStartGame.disabled = true;
+                    btnStartGame.classList.add("opacity-50", "cursor-not-allowed");
+                    startGameWarning.textContent = "Se necesita un número par de jugadores (mín. 2)";
+                    startGameWarning.classList.remove('hidden');
+                }
+            }
+        }
+        
+        btnStartGame.addEventListener('click', () => {
+            if (!isHost) return;
+            assignTeamsAndRoles();
+        });
+
+        function assignTeamsAndRoles() {
+            const playerIds = shuffleArray(Object.keys(localGameState.players));
+            const teams = {};
+            const updatedPlayers = { ...localGameState.players };
+            let teamCounter = 0;
+
+            for (let i = 0; i < playerIds.length; i += 2) {
+                const teamId = `team_${String.fromCharCode(65 + teamCounter)}`;
+                const player1Id = playerIds[i];
+                const player2Id = playerIds[i+1];
+
+                const roles = shuffleArray(["APOCALYPTIC", "REALIST"]);
+                
+                updatedPlayers[player1Id].team = teamId;
+                updatedPlayers[player1Id].role = roles[0];
+                updatedPlayers[player2Id].team = teamId;
+                updatedPlayers[player2Id].role = roles[1];
+
+                teams[teamId] = {
+                    player1: player1Id,
+                    player2: player2Id,
+                    // Nombre de equipo más profesional
+                    name: `Equipo ${updatedPlayers[player1Id].name} y ${updatedPlayers[player2Id].name}`,
+                    score: 0
+                };
+                teamCounter++;
+            }
+
+            set(ref(db, `games/${currentLobbyCode}`), {
+                ...localGameState,
+                players: updatedPlayers,
+                teams: teams,
+                currentRound: 1,
+                currentScenario: localGameState.scenarios[0],
+                gameState: "ROLES",
+                responses: {},
+                votes: {},
+                roundScores: {}
+            }).catch(handleError);
+        }
+
+        function updateRolesUI() {
+            const myPlayer = localGameState.players[currentUserId];
+            if (!myPlayer || !myPlayer.team) {
+                console.warn("No se encontró jugador o equipo, volviendo al lobby");
+                handleError({message: "Error al asignar roles, regresando al lobby."});
+                if(isHost) set(ref(db, `games/${currentLobbyCode}/gameState`), "LOBBY");
+                return;
+            }
+            const myRole = myPlayer.role;
+            const myTeam = localGameState.teams[myPlayer.team];
+            
+            const partnerId = myTeam.player1 === currentUserId ? myTeam.player2 : myTeam.player1;
+            const partner = localGameState.players[partnerId];
+
+            document.getElementById('partner-name').textContent = partner.name;
+            const roleNameEl = document.getElementById('role-name');
+            
+            // Textos de rol revertidos
+            if (myRole === "REALIST") {
+                roleNameEl.textContent = "El Realista";
+                roleNameEl.classList.remove('text-red-500');
+                roleNameEl.classList.add('text-cyan-500');
+            } else {
+                roleNameEl.textContent = "El Apocalíptico";
+                roleNameEl.classList.remove('text-cyan-500');
+                roleNameEl.classList.add('text-red-500');
+            }
+
+            if (isHost) {
+                document.getElementById('btn-start-round').classList.remove('hidden');
+            }
+        }
+
+        document.getElementById('btn-start-round').addEventListener('click', () => {
+            if (!isHost) return;
+            set(ref(db, `games/${currentLobbyCode}/gameState`), "APOCALYPTIC_WRITING").catch(handleError);
+            set(ref(db, `games/${currentLobbyCode}/roundStartTime`), serverTimestamp()).catch(handleError);
+        });
+
+        function showWritingScreen(roleToShow) {
+            const myRole = localGameState.players[currentUserId].role;
+            const currentScenario = localGameState.currentScenario;
+            const round = localGameState.currentRound;
+
+            let hasSubmitted = false;
+            if (roleToShow === 'APOCALYPTIC' && myRole === 'APOCALYPTIC') {
+                hasSubmitted = !!localGameState.responses?.[`round_${round}`]?.[myTeamId]?.apocalyptic;
+            } else if (roleToShow === 'REALIST' && myRole === 'REALIST') {
+                hasSubmitted = !!localGameState.responses?.[`round_${round}`]?.[myTeamId]?.realist;
+            }
+
+            if (myRole === roleToShow && !hasSubmitted) { 
+                if (roleToShow === 'APOCALYPTIC') {
+                    document.getElementById('scenario-text-apocalyptic').textContent = currentScenario;
+                    document.getElementById('apocalyptic-textarea').value = "";
+                    showScreen('writingApocalyptic');
+                    startTimer(30, 'timer-apocalyptic', () => {
+                        submitApocalypticResponse();
+                    });
+                } else {
+                    const round = localGameState.currentRound;
+                    const apocalypticResponse = localGameState.responses?.[`round_${round}`]?.[myTeamId]?.apocalyptic || "(Tu pareja no escribió nada... ¡qué desastre!)";
+                    
+                    document.getElementById('scenario-text-realist').textContent = currentScenario;
+                    document.getElementById('apocalyptic-response-text').textContent = apocalypticResponse;
+                    document.getElementById('realist-textarea').value = "";
+                    showScreen('writingRealist');
+                    startTimer(30, 'timer-realist', () => {
+                        submitRealistResponse();
+                    });
+                }
+            } else {
+                let waitingText = "";
+                if (hasSubmitted) {
+                    waitingText = "Respuesta enviada. Esperando al resto de jugadores...";
+                } else {
+                    // Texto de espera más neutral
+                    waitingText = (roleToShow === 'APOCALYPTIC') ? 
+                        "Esperando a que los Apocalípticos siembren el caos..." :
+                        "Esperando a que los Realistas pongan un poco de orden...";
+                }
+                document.getElementById('waiting-text').textContent = waitingText;
+                showScreen('waiting');
+            }
+        }
+
+        document.getElementById('btn-submit-apocalyptic').addEventListener('click', submitApocalypticResponse);
+        document.getElementById('btn-submit-realist').addEventListener('click', submitRealistResponse);
+
+        function submitApocalypticResponse() {
+            if (document.getElementById('screen-waiting').classList.contains('hidden') === false) return;
+
+            if (currentTimer) clearInterval(currentTimer);
+            // Texto de fallback más neutral
+            const response = document.getElementById('apocalyptic-textarea').value.trim() || "(Se quedó sin palabras ante el horror)";
+            const round = localGameState.currentRound;
+            
+            document.getElementById('waiting-text').textContent = "Respuesta enviada. Esperando al resto...";
+            showScreen('waiting');
+            
+            set(ref(db, `games/${currentLobbyCode}/responses/round_${round}/${myTeamId}/apocalyptic`), response)
+                .catch(handleError);
+        }
+
+        function submitRealistResponse() {
+            if (document.getElementById('screen-waiting').classList.contains('hidden') === false) return;
+            
+            if (currentTimer) clearInterval(currentTimer);
+            // Texto de fallback más neutral
+            const response = document.getElementById('realist-textarea').value.trim() || "(No hay nada que salvar. Estamos perdidos.)";
+            const round = localGameState.currentRound;
+
+            document.getElementById('waiting-text').textContent = "Respuesta enviada. Esperando al resto...";
+            showScreen('waiting');
+            
+            set(ref(db, `games/${currentLobbyCode}/responses/round_${round}/${myTeamId}/realist`), response)
+                .catch(handleError);
+        }
+        
+        function startTimer(duration, elementId, onEndCallback) {
+            if (currentTimer) clearInterval(currentTimer);
+            
+            const timerElement = document.getElementById(elementId);
+            if (!timerElement) return;
+
+            let timeLeft = duration;
+            timerElement.textContent = timeLeft;
+
+            currentTimer = setInterval(() => {
+                timeLeft--;
+                timerElement.textContent = timeLeft;
+                if (timeLeft <= 0) {
+                    clearInterval(currentTimer);
+                    currentTimer = null;
+                    if (onEndCallback) onEndCallback();
+                }
+            }, 1000);
+        }
+        
+        function showVotingScreen() {
+            const container = document.getElementById('voting-options-container');
+            container.innerHTML = '';
+            
+            const round = localGameState.currentRound;
+            const responses = localGameState.responses?.[`round_${round}`] || {};
+            const teams = localGameState.teams;
+            const votes = localGameState.votes?.[`round_${round}`]?.[currentUserId] || {};
+
+            let hasOptions = false;
+
+            for (const teamId in responses) {
+                if (teamId === myTeamId) continue;
+                if (!teams[teamId]) continue;
+                
+                hasOptions = true;
+                const teamName = teams[teamId].name;
+                const apocalypticText = responses[teamId].apocalyptic || "(Sin respuesta)";
+                const realistText = responses[teamId].realist || "(Sin respuesta)";
+                
+                const pessimistVoted = !!votes.creativePessimist || pendingPessimistVote;
+                const moderatorVoted = !!votes.persuasiveModerator || pendingModeratorVote;
+                
+                const myPessimistVoteFor = votes.creativePessimist || null;
+                const myModeratorVoteFor = votes.persuasiveModerator || null;
+                
+                // *** CAMBIO AQUÍ: Textos de votación simplificados ***
+                const card = `
+                    <div class="card p-6">
+                        <h4 class="font-title text-2xl text-cyan-400 mb-4">${teamName}</h4>
+                        <div class="mb-4 bg-black/20 p-3 rounded-lg">
+                            <p class="text-xs text-red-400 font-bold uppercase tracking-wider">El Apocalíptico dijo:</p>
+                            <p class="italic text-gray-200 text-lg">${apocalypticText}</p>
+                        </div>
+                        <div class="bg-black/20 p-3 rounded-lg">
+                            <p class="text-xs text-cyan-400 font-bold uppercase tracking-wider">El Realista dijo:</p>
+                            <p class="text-gray-200 text-lg">${realistText}</p>
+                        </div>
+                        <div class="flex flex-col sm:flex-row justify-between mt-6 gap-3">
+                            <button class="vote-btn btn flex-1 bg-gray-700 hover:bg-red-600 text-white font-medium py-3 px-4 rounded-lg
+                                ${pessimistVoted ? 'opacity-50 cursor-not-allowed' : ''}
+                                ${myPessimistVoteFor === teamId ? 'bg-red-600 ring-2 ring-white' : ''}" 
+                                data-vote-type="pessimist" data-team-id="${teamId}" ${pessimistVoted ? 'disabled' : ''}>
+                                El Pesimismo más Creativo
+                            </button>
+                            <button class="vote-btn btn flex-1 bg-gray-700 hover:bg-cyan-600 text-white font-medium py-3 px-4 rounded-lg
+                                ${moderatorVoted ? 'opacity-50 cursor-not-allowed' : ''}
+                                ${myModeratorVoteFor === teamId ? 'bg-cyan-600 ring-2 ring-white' : ''}" 
+                                data-vote-type="moderator" data-team-id="${teamId}" ${moderatorVoted ? 'disabled' : ''}>
+                                La Moderación más Persuasiva
+                            </button>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += card;
+            }
+
+            if (!hasOptions) {
+                container.innerHTML = '<p class="text-center text-gray-400 text-xl">Nadie más ha respondido. ¡Ronda de descanso!</p>';
+            }
+
+            document.querySelectorAll('.vote-btn').forEach(btn => {
+                btn.addEventListener('click', handleVote);
+            });
+            
+            showScreen('voting');
+            
+            if (!currentTimer) {
+                startTimer(60, 'timer-voting', () => {
+                    console.log("Tiempo de votación local terminado.");
+                });
+            }
+        }
+        
+        function handleVote(e) {
+            const btn = e.currentTarget;
+            if (btn.disabled) return;
+            
+            const voteType = btn.dataset.voteType;
+            const teamId = btn.dataset.teamId;
+            const round = localGameState.currentRound;
+            const votes = localGameState.votes?.[`round_${round}`]?.[currentUserId] || {};
+            
+            const voteKey = voteType === 'pessimist' ? 'creativePessimist' : 'persuasiveModerator';
+
+            if (votes[voteKey]) {
+                console.log("Voto ya confirmado.");
+                return;
+            }
+            
+            if (voteType === 'pessimist' && pendingPessimistVote) {
+                console.log("Voto pesimista pendiente.");
+                return;
+            }
+            if (voteType === 'moderator' && pendingModeratorVote) {
+                console.log("Voto moderador pendiente.");
+                return;
+            }
+            
+            if (voteType === 'pessimist') pendingPessimistVote = true;
+            if (voteType === 'moderator') pendingModeratorVote = true;
+            
+            set(ref(db, `games/${currentLobbyCode}/votes/round_${round}/${currentUserId}/${voteKey}`), teamId)
+                .catch(handleError);
+
+            showVotingScreen();
+        }
+        
+        function calculateScoresAndAdvance() {
+            if (!isHost) return;
+
+            if (localGameState.gameState !== "VOTING") {
+                console.warn("calculateScoresAndAdvance llamado pero el estado no es VOTING. Ignorando.");
+                return;
+            }
+
+            console.log("Host: Calculando puntuaciones...");
+
+            const round = localGameState.currentRound;
+            const votes = localGameState.votes?.[`round_${round}`] || {};
+            const teams = localGameState.teams;
+            
+            const roundScores = {};
+            Object.keys(teams).forEach(teamId => {
+                roundScores[teamId] = 0;
+            });
+
+            // Bonus por metáfora (simplificado)
+            const responses = localGameState.responses?.[`round_${round}`] || {};
+
+            for (const voterId in votes) {
+                const vote = votes[voterId];
+                if (vote.creativePessimist && roundScores[vote.creativePessimist] !== undefined) {
+                    roundScores[vote.creativePessimist] += 100;
+                }
+                if (vote.persuasiveModerator && roundScores[vote.persuasiveModerator] !== undefined) {
+                    roundScores[vote.persuasiveModerator] += 100;
+                }
+            }
+            
+            // Añadir bonus por metáforas (lógica simple de placeholder)
+            Object.keys(teams).forEach(teamId => {
+                const teamResponse = responses[teamId] || {};
+                if (teamResponse.apocalyptic?.includes("como un")) roundScores[teamId] += 50;
+                if (teamResponse.realist?.includes("es igual que")) roundScores[teamId] += 50;
+            });
+
+
+            const promises = [];
+            for (const teamId in roundScores) {
+                if (roundScores[teamId] > 0) {
+                    const teamScoreRef = ref(db, `games/${currentLobbyCode}/teams/${teamId}/score`);
+                    promises.push(runTransaction(teamScoreRef, (currentScore) => {
+                        return (currentScore || 0) + roundScores[teamId];
+                    }));
+                }
+            }
+            
+            Promise.all(promises).then(() => {
+                set(ref(db, `games/${currentLobbyCode}`), {
+                    ...localGameState,
+                    roundScores: { ...localGameState.roundScores, [`round_${round}`]: roundScores },
+                    gameState: "SCORES"
+                }).catch(handleError);
+                
+                console.log("Host: Puntuaciones calculadas y estado cambiado a SCORES.");
+            }).catch(handleError);
+        }
+        
+        function updateScoresUI() {
+            const round = localGameState.currentRound;
+            const roundScores = localGameState.roundScores?.[`round_${round}`] || {};
+            const teams = localGameState.teams || {};
+
+            const roundScoresList = document.getElementById('round-scores-list');
+            const totalScoresList = document.getElementById('total-scores-list');
+            roundScoresList.innerHTML = '';
+            totalScoresList.innerHTML = '';
+
+            const sortedTeams = Object.entries(teams).sort(([, a], [, b]) => b.score - a.score);
+
+            if (Object.keys(roundScores).length > 0) {
+                sortedTeams.forEach(([teamId, teamData]) => {
+                    const score = roundScores[teamId] || 0;
+                    if (score > 0) {
+                        const el = document.createElement('div');
+                        el.className = "flex justify-between items-center bg-gray-900/50 p-3 rounded";
+                        el.innerHTML = `<span class="font-medium text-lg">${teamData.name}</span><span class="font-bold text-amber-400 text-xl score-pulse">+${score}</span>`;
+                        roundScoresList.appendChild(el);
+                    }
+                });
+            } 
+            
+            if (roundScoresList.innerHTML === '') {
+                roundScoresList.innerHTML = '<p class="text-gray-400">Nadie votó... qué deprimente.</p>';
+            }
+
+            sortedTeams.forEach(([teamId, teamData], index) => {
+                const el = document.createElement('div');
+                el.className = "flex justify-between items-center bg-gray-900/50 p-4 rounded-lg";
+                el.innerHTML = `<span class="font-bold text-xl">${index + 1}. ${teamData.name}</span><span class="font-extrabold text-3xl text-cyan-400">${teamData.score}</span>`;
+                totalScoresList.appendChild(el);
+            });
+            
+            if (isHost) {
+                // Comprobar si quedan escenarios
+                const isLastRound = localGameState.currentRound >= localGameState.scenarios.length;
+                if (isLastRound) {
+                    document.getElementById('btn-end-game').classList.remove('hidden');
+                    document.getElementById('btn-next-round').classList.add('hidden');
+                } else {
+                    document.getElementById('btn-end-game').classList.add('hidden');
+                    document.getElementById('btn-next-round').classList.remove('hidden');
+                }
+            }
+        }
+        
+        document.getElementById('btn-next-round').addEventListener('click', () => {
+            if (!isHost) return;
+            
+            const newRound = localGameState.currentRound + 1;
+            const newScenario = localGameState.scenarios[newRound - 1];
+            
+            const updatedPlayers = { ...localGameState.players };
+            Object.keys(updatedPlayers).forEach(playerId => {
+                updatedPlayers[playerId].role = updatedPlayers[playerId].role === "APOCALYPTIC" ? "REALIST" : "APOCALYPTIC";
+            });
+
+            set(ref(db, `games/${currentLobbyCode}/players`), updatedPlayers).catch(handleError);
+            set(ref(db, `games/${currentLobbyCode}/currentRound`), newRound).catch(handleError);
+            set(ref(db, `games/${currentLobbyCode}/currentScenario`), newScenario).catch(handleError);
+            set(ref(db, `games/${currentLobbyCode}/gameState`), "ROLES").catch(handleError);
+        });
+        
+        document.getElementById('btn-end-game').addEventListener('click', () => {
+            if (!isHost) return;
+            set(ref(db, `games/${currentLobbyCode}/gameState`), "GAME_OVER").catch(handleError);
+        });
+
+        function updateGameOverUI() {
+            const teams = localGameState.teams || {};
+            const sortedTeams = Object.entries(teams).sort(([, a], [, b]) => b.score - a.score);
+            
+            const finalScoresList = document.getElementById('final-scores-list');
+            finalScoresList.innerHTML = '';
+            
+            if (sortedTeams.length > 0) {
+                const winner = sortedTeams[0][1];
+                document.getElementById('winner-team-name').textContent = winner.name;
+
+                sortedTeams.forEach(([teamId, teamData], index) => {
+                    const el = document.createElement('div');
+                    // Color de ganador revertido a "amber"
+                    el.className = `flex justify-between items-center p-4 rounded-lg ${index === 0 ? 'bg-amber-600/50' : 'bg-gray-900/50'}`;
+                    el.innerHTML = `<span class="font-bold text-xl">${index === 0 ? '🏆' : (index + 1 + '.')} ${teamData.name}</span><span class="font-extrabold text-3xl text-white">${teamData.score}</span>`;
+                    finalScoresList.appendChild(el);
+                });
+
+            } else {
+                document.getElementById('winner-team-name').textContent = "Empate técnico.";
+            }
+            
+            if (isHost) {
+                document.getElementById('btn-play-again').classList.remove('hidden');
+            }
+        }
+        
+        document.getElementById('btn-play-again').addEventListener('click', () => {
+            if (!isHost) return;
+            
+            const players = localGameState.players;
+            Object.keys(players).forEach(pId => {
+                delete players[pId].role;
+                delete players[pId].team;
+            });
+            
+            const newGame = {
+                host: currentUserId,
+                gameState: "LOBBY",
+                createdAt: serverTimestamp(),
+                players: players,
+                currentRound: 0,
+                scenarios: shuffleArray([...allScenarios])
+            };
+
+            set(ref(db, `games/${currentLobbyCode}`), newGame).catch(handleError);
+        });
+
+    </script>
+</body>
+</html>
