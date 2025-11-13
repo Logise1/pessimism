@@ -3,31 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Título revertido -->
-    <title>Pesimismo Creativo</title>
+    <!-- Título cambiado -->
+    <title>¡Fin del Mundo!</title>
     <!-- Carga de Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Carga de las nuevas fuentes (Oswald + Inter) -->
+    <!-- Carga de la nueva fuente (Poppins) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
     
     <!-- Estilos actualizados -->
     <style>
         body {
-            /* Fuente base cambiada a Inter */
-            font-family: 'Inter', sans-serif;
+            /* Fuente base cambiada a Poppins */
+            font-family: 'Poppins', sans-serif;
             /* Mismo fondo de gradiente */
             background-color: #0f0c29;
             background-image: linear-gradient(135deg, #302364, #1f1a3a, #0f0c29);
         }
-        /* Clase para los nuevos títulos (Oswald) */
+        /* Clase para los nuevos títulos (Poppins Bold) */
         .font-title {
-            font-family: 'Oswald', sans-serif;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 800;
             letter-spacing: 0.05em;
             text-transform: uppercase;
         }
-        /* Clase para las tarjetas con efecto cristal (sin cambios, es bueno) */
+        /* Clase para las tarjetas con efecto cristal */
         .card {
             background-color: rgba(23, 27, 41, 0.7); /* bg-gray-800/70 */
             backdrop-filter: blur(10px);
@@ -39,7 +40,7 @@
         .hidden {
             display: none;
         }
-        /* Spinner (sin cambios) */
+        /* Spinner */
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
@@ -51,14 +52,15 @@
             height: 40px;
             animation: spin 1s linear infinite;
         }
-        /* Temporizador con nueva fuente (Oswald) */
+        /* Temporizador con nueva fuente (Poppins Bold) */
         .timer {
-            font-family: 'Oswald', sans-serif;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 800;
             font-size: 4rem;
             line-height: 1;
             text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
         }
-        /* Animación para botones (sin cambios, es bueno) */
+        /* Animación para botones */
         .btn {
             transition: transform 0.15s ease-out, background-color 0.2s;
         }
@@ -68,7 +70,7 @@
         .btn:active {
             transform: scale(0.98);
         }
-        /* Animación de pulso para puntuaciones (sin cambios) */
+        /* Animación de pulso para puntuaciones */
         .score-pulse {
             animation: pulse-light 1.5s infinite;
         }
@@ -93,35 +95,35 @@
 
     <!-- Pantalla de Unirse/Crear Partida -->
     <div id="screen-join" class="hidden w-full max-w-md p-8 card">
-        <!-- Título revertido, color cambiado a "amber" -->
-        <h1 class="font-title text-5xl text-amber-400 mb-6 text-center">Pesimismo Creativo</h1>
-        <p class="text-gray-300 mb-8 text-center text-lg">La desgracia ama la compañía. Únete.</p>
+        <!-- Título y color cambiados -->
+        <h1 class="font-title text-5xl text-lime-400 mb-6 text-center">¡Fin del Mundo!</h1>
+        <p class="text-gray-300 mb-8 text-center text-lg">El Apocalipsis es más divertido con amigos.</p>
         <div class="mb-4">
-            <label for="name-input" class="block text-sm font-medium text-gray-300 mb-2">Tu Nombre</label>
-            <input type="text" id="name-input" class="w-full px-4 py-3 bg-gray-900/50 border border-gray-700 rounded-lg text-white text-lg focus:outline-none focus:ring-2 focus:ring-cyan-500" placeholder="Juan Desgracias">
+            <label for="name-input" class="block text-sm font-medium text-gray-300 mb-2">Tu Apodo</label>
+            <input type="text" id="name-input" class="w-full px-4 py-3 bg-gray-900/50 border border-gray-700 rounded-lg text-white text-lg focus:outline-none focus:ring-2 focus:ring-cyan-500" placeholder="Sobreviviente1">
         </div>
         <div class="mb-6">
             <label for="lobby-code-input" class="block text-sm font-medium text-gray-300 mb-2">Código de la Sala</label>
             <input type="text" id="lobby-code-input" maxlength="4" class="w-full px-4 py-3 bg-gray-900/50 border border-gray-700 rounded-lg text-white uppercase text-center text-2xl tracking-widest font-bold focus:outline-none focus:ring-2 focus:ring-cyan-500" placeholder="ABCD">
         </div>
-        <!-- Texto de botones revertido -->
-        <button id="btn-join-lobby" class="btn w-full bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-3 px-6 rounded-lg mb-3 text-lg">Unirse a la Sala</button>
-        <button id="btn-create-lobby" class="btn w-full bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 px-6 rounded-lg text-lg">Crear Sala Nueva</button>
+        <!-- Texto de botones cambiado -->
+        <button id="btn-join-lobby" class="btn w-full bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-3 px-6 rounded-lg mb-3 text-lg">Unirse al Apocalipsis</button>
+        <button id="btn-create-lobby" class="btn w-full bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 px-6 rounded-lg text-lg">Crear Nuevo Apocalipsis</button>
     </div>
 
     <!-- Pantalla de Lobby (Sala de Espera) -->
     <div id="screen-lobby" class="hidden w-full max-w-lg p-8 card text-center">
-        <h2 class="font-title text-4xl text-amber-400 mb-4">Sala de Espera</h2>
+        <h2 class="font-title text-4xl text-lime-400 mb-4">Sala de Espera</h2>
         <p class="text-gray-400 mb-6">Comparte este código con tus amigos:</p>
         <div class="bg-gray-900/50 border-2 border-dashed border-gray-700 rounded-lg p-4 mb-6">
-            <span id="lobby-code-display" class="font-title text-6xl font-extrabold tracking-widest text-amber-400"></span>
+            <span id="lobby-code-display" class="font-title text-6xl font-extrabold tracking-widest text-lime-400"></span>
         </div>
-        <h3 class="text-xl font-bold mb-4">Jugadores Conectados:</h3>
+        <h3 class="text-xl font-bold mb-4">Jugadores Listos:</h3>
         <div id="player-list" class="grid grid-cols-2 gap-4 mb-8 min-h-[100px]">
             <!-- Los jugadores se listarán aquí -->
         </div>
         <button id="btn-start-game" class="hidden btn w-full bg-red-600 hover:bg-red-500 text-white font-bold py-3 px-6 rounded-lg text-xl uppercase">
-            Empezar Partida
+            ¡Empezar!
         </Cbutton>
         <p id="start-game-warning" class="hidden mt-4 text-yellow-400 font-semibold">Necesitas un número par de jugadores (mín. 2).</p>
     </div>
@@ -129,11 +131,11 @@
     <!-- Pantalla de Asignación de Roles -->
     <div id="screen-roles" class="hidden text-center p-8">
         <div class="card p-10 max-w-lg mx-auto">
-            <p class="text-xl text-gray-300 mb-2">Tu pareja es:</p>
+            <p class="text-xl text-gray-300 mb-2">Tu compi de equipo es:</p>
             <h2 id="partner-name" class="font-title text-5xl text-cyan-400 mb-8"></h2>
             
             <p class="text-xl text-gray-300 mb-2">Tu rol esta ronda:</p>
-            <!-- El texto se asignará desde JS -->
+            <!-- El texto se asignará desde JS (¡EL PEOR FINAL! / ¡EL ARREGLO!) -->
             <h1 id="role-name" class="font-title text-7xl font-extrabold text-red-500"></h1>
             
             <p class="text-gray-400 mt-8 text-lg">Prepárate...</p>
@@ -147,8 +149,9 @@
     <!-- Pantalla de Escritura (Apocalíptico) -->
     <div id="screen-writing-apocalyptic" class="hidden w-full max-w-2xl p-8 card">
         <div class="text-center mb-6">
-            <span class="font-title text-red-500 text-4xl">Rol: El Apocalíptico</span>
-            <p class="text-gray-300 text-lg mt-2">Describe el peor escenario posible.</p>
+            <!-- Título de rol cambiado -->
+            <span class="font-title text-red-500 text-4xl">ROL: ¡EL PEOR FINAL! ☠️</span>
+            <p class="text-gray-300 text-lg mt-2">¡Inventa el peor desastre posible!</p>
         </div>
         <div id="timer-apocalyptic" class="timer text-center text-red-500 mb-6">30</div>
         <div class="bg-gray-900/50 p-6 rounded-lg shadow-inner mb-6">
@@ -156,25 +159,29 @@
             <h3 id="scenario-text-apocalyptic" class="text-2xl font-semibold"></h3>
         </div>
         <textarea id="apocalyptic-textarea" class="w-full h-40 px-4 py-3 bg-gray-900/50 border border-gray-700 rounded-lg text-white text-base focus:outline-none focus:ring-2 focus:ring-red-500" placeholder="El mundo se acaba porque..."></textarea>
-        <button id="btn-submit-apocalyptic" class="btn w-full mt-4 bg-red-600 hover:bg-red-500 text-white font-bold py-3 px-6 rounded-lg text-xl uppercase">Enviar Predicción</button>
+        <!-- Botón cambiado -->
+        <button id="btn-submit-apocalyptic" class="btn w-full mt-4 bg-red-600 hover:bg-red-500 text-white font-bold py-3 px-6 rounded-lg text-xl uppercase">¡Lanzar Desastre! 💥</button>
     </div>
 
     <!-- Pantalla de Escritura (Realista) -->
     <div id="screen-writing-realist" class="hidden w-full max-w-2xl p-8 card">
         <div class="text-center mb-6">
-            <span class="font-title text-cyan-500 text-4xl">Rol: El Realista</span>
-            <p class="text-gray-300 text-lg mt-2">Tu pareja ha predicho lo peor. ¡Arréglalo!</p>
+            <!-- Título de rol cambiado -->
+            <span class="font-title text-cyan-500 text-4xl">ROL: ¡EL ARREGLO! 🔧</span>
+            <p class="text-gray-300 text-lg mt-2">Tu compi se ha pasado. ¡Arréglalo!</p>
         </div>
         <div id="timer-realist" class="timer text-center text-cyan-500 mb-6">30</div>
         <div class="bg-gray-900/50 p-6 rounded-lg shadow-inner mb-6">
             <p class="text-gray-400 mb-2 uppercase text-sm font-bold tracking-wider">Escenario:</p>
             <h3 id="scenario-text-realist" class="text-xl font-semibold mb-4"></h3>
             <hr class="border-gray-700 my-4">
-            <p class="text-red-400 mb-2 uppercase text-sm font-bold tracking-wider">La predicción Apocalíptica:</p>
+            <!-- Título de predicción cambiado -->
+            <p class="text-red-400 mb-2 uppercase text-sm font-bold tracking-wider">La predicción del "Peor Final":</p>
             <blockquote id="apocalyptic-response-text" class="text-lg italic text-white border-l-4 border-red-500 pl-4"></blockquote>
         </div>
         <textarea id="realist-textarea" class="w-full h-40 px-4 py-3 bg-gray-900/50 border border-gray-700 rounded-lg text-white text-base focus:outline-none focus:ring-2 focus:ring-cyan-500" placeholder="Bueno, no es para tanto, en realidad..."></textarea>
-        <button id="btn-submit-realist" class="btn w-full mt-4 bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-3 px-6 rounded-lg text-xl uppercase">Enviar Corrección</button>
+        <!-- Botón cambiado -->
+        <button id="btn-submit-realist" class="btn w-full mt-4 bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-3 px-6 rounded-lg text-xl uppercase">¡Salvar el Día! 🦸</button>
     </div>
 
     <!-- Pantalla de Espera (para jugadores que no escriben o ya terminaron) -->
@@ -186,30 +193,32 @@
 
     <!-- Pantalla de Votación -->
     <div id="screen-voting" class="hidden w-full max-w-4xl p-8 card">
-        <h2 class="font-title text-5xl text-amber-400 text-center mb-2">Votación</h2>
-        <p class="text-gray-300 text-center text-lg mb-6">Elige las mejores (o peores) respuestas. No puedes votar por tu propio equipo.</p>
-        <div id="timer-voting" class="timer text-center text-amber-400 mb-6">60</div>
+        <h2 class="font-title text-5xl text-lime-400 text-center mb-2">Votación</h2>
+        <p class="text-gray-300 text-center text-lg mb-6">¡Vota por tus favoritos! (No por tu equipo, obvio)</p>
+        <div id="timer-voting" class="timer text-center text-lime-400 mb-6">60</div>
         
         <div id="voting-options-container" class="space-y-6 max-h-[60vh] overflow-y-auto p-2 rounded-lg bg-black/20">
-            <!-- Las opciones de votación se generarán aquí -->
+            <!-- Las opciones de votación se generarán aquí (con botones actualizados) -->
         </div>
     </div>
 
     <!-- Pantalla de Puntuaciones -->
     <div id="screen-scores" class="hidden w-full max-w-2xl p-8 text-center">
         <div class="card p-8">
-            <h2 class="font-title text-6xl text-amber-400 mb-8">Puntuaciones</h2>
+            <h2 class="font-title text-6xl text-lime-400 mb-8">¡Resultados de la Ronda!</h2>
             
-            <h3 class="font-title text-3xl text-cyan-400 mb-3">Puntos de esta Ronda</h3>
-            <div id="round-scores-list" class="space-y-2 mb-8">
-                <!-- Puntuaciones de la ronda -->
+            <!-- CONTENIDO CAMBIADO: Ganadores de la Ronda -->
+            <h3 class="font-title text-3xl text-cyan-400 mb-3">Ganadores de la Ronda</h3>
+            <div id="round-scores-list" class="space-y-4 mb-8 text-left">
+                <!-- Los ganadores de la ronda se mostrarán aquí -->
             </div>
 
             <hr class="border-gray-700 my-8">
 
-            <h3 class="font-title text-3xl text-cyan-400 mb-3">Puntuación Total</h3>
+            <!-- CONTENIDO CAMBIADO: Leaderboard -->
+            <h3 class="font-title text-3xl text-cyan-400 mb-3">Leaderboard</h3>
             <div id="total-scores-list" class="space-y-3">
-                <!-- Puntuaciones totales -->
+                <!-- Puntuaciones totales con medallas -->
             </div>
         </div>
         
@@ -224,13 +233,13 @@
     <!-- Pantalla de Fin de Partida -->
     <div id="screen-game-over" class="hidden w-full max-w-2xl p-8 text-center">
         <div class="card p-8">
-            <h2 class="font-title text-5xl text-amber-400 mb-6">Partida Terminada</h2>
-            <h3 class="text-2xl font-semibold text-gray-300 mb-4">El equipo ganador es...</h3>
+            <h2 class="font-title text-5xl text-lime-400 mb-6">¡El Juego ha Terminado!</h2>
+            <h3 class="text-2xl font-semibold text-gray-300 mb-4">¡Los Supervivientes Definitivos!</h3>
             <h1 id="winner-team-name" class="font-title text-6xl text-cyan-400 mb-8 score-pulse"></h1>
             
             <h3 class="font-title text-3xl text-gray-400 mb-4">Marcador Final</h3>
             <div id="final-scores-list" class="space-y-3">
-                <!-- Puntuaciones finales -->
+                <!-- Puntuaciones finales con medallas -->
             </div>
         </div>
         <button id="btn-play-again" class="hidden btn mt-8 bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-3 px-6 rounded-lg text-xl uppercase">
@@ -272,7 +281,6 @@
         let pendingModeratorVote = false;
 
         // --- Carga de escenarios desde JSON ---
-        // URL ACTUALIZADA
         const SCENARIOS_URL = "https://logise1.github.io/pessimism/escenarios.json";
         
         let allScenarios = []; // Aquí guardaremos los escenarios cargados
@@ -332,7 +340,6 @@
         async function loadScenarios() {
             console.log("Cargando escenarios desde:", SCENARIOS_URL);
             try {
-                // Se elimina la comprobación de "TU_USUARIO"
                 const response = await fetch(SCENARIOS_URL);
                 if (!response.ok) {
                     throw new Error(`Error al cargar escenarios: ${response.statusText}`);
@@ -383,7 +390,7 @@
         btnCreateLobby.addEventListener('click', () => {
             const playerName = nameInput.value.trim();
             if (!playerName) {
-                handleError({ message: "Por favor, introduce tu nombre." });
+                handleError({ message: "Por favor, introduce tu apodo." });
                 return;
             }
             if (!currentUserId) { 
@@ -416,7 +423,7 @@
             const lobbyCode = lobbyCodeInput.value.trim().toUpperCase();
 
             if (!playerName) {
-                handleError({ message: "Por favor, introduce tu nombre." });
+                handleError({ message: "Por favor, introduce tu apodo." });
                 return;
             }
             if (!lobbyCode) {
@@ -659,11 +666,10 @@
             const playerCount = Object.keys(players).length;
             
             playerList.innerHTML = '';
-            // Se eliminan los emojis
             Object.values(players).forEach((player, index) => {
                 const playerEl = document.createElement('div');
                 playerEl.className = "bg-gray-900/50 p-3 rounded-lg text-white font-medium text-lg";
-                playerEl.textContent = player.name; // Solo el nombre
+                playerEl.textContent = player.name;
                 playerList.appendChild(playerEl);
             });
 
@@ -710,7 +716,6 @@
                 teams[teamId] = {
                     player1: player1Id,
                     player2: player2Id,
-                    // Nombre de equipo más profesional
                     name: `Equipo ${updatedPlayers[player1Id].name} y ${updatedPlayers[player2Id].name}`,
                     score: 0
                 };
@@ -747,13 +752,13 @@
             document.getElementById('partner-name').textContent = partner.name;
             const roleNameEl = document.getElementById('role-name');
             
-            // Textos de rol revertidos
+            // Textos de rol actualizados
             if (myRole === "REALIST") {
-                roleNameEl.textContent = "El Realista";
+                roleNameEl.textContent = "¡EL ARREGLO! 🔧";
                 roleNameEl.classList.remove('text-red-500');
                 roleNameEl.classList.add('text-cyan-500');
             } else {
-                roleNameEl.textContent = "El Apocalíptico";
+                roleNameEl.textContent = "¡EL PEOR FINAL! ☠️";
                 roleNameEl.classList.remove('text-cyan-500');
                 roleNameEl.classList.add('text-red-500');
             }
@@ -791,7 +796,7 @@
                     });
                 } else {
                     const round = localGameState.currentRound;
-                    const apocalypticResponse = localGameState.responses?.[`round_${round}`]?.[myTeamId]?.apocalyptic || "(Tu pareja no escribió nada... ¡qué desastre!)";
+                    const apocalypticResponse = localGameState.responses?.[`round_${round}`]?.[myTeamId]?.apocalyptic || "(Tu compi no escribió nada... ¡qué desastre!)";
                     
                     document.getElementById('scenario-text-realist').textContent = currentScenario;
                     document.getElementById('apocalyptic-response-text').textContent = apocalypticResponse;
@@ -804,12 +809,11 @@
             } else {
                 let waitingText = "";
                 if (hasSubmitted) {
-                    waitingText = "Respuesta enviada. Esperando al resto de jugadores...";
+                    waitingText = "¡Respuesta enviada! Esperando al resto...";
                 } else {
-                    // Texto de espera más neutral
                     waitingText = (roleToShow === 'APOCALYPTIC') ? 
-                        "Esperando a que los Apocalípticos siembren el caos..." :
-                        "Esperando a que los Realistas pongan un poco de orden...";
+                        "Esperando a que inventen los peores finales... ☠️" :
+                        "Esperando a que los Aguafiestas lo arreglen... 🔧";
                 }
                 document.getElementById('waiting-text').textContent = waitingText;
                 showScreen('waiting');
@@ -823,11 +827,10 @@
             if (document.getElementById('screen-waiting').classList.contains('hidden') === false) return;
 
             if (currentTimer) clearInterval(currentTimer);
-            // Texto de fallback más neutral
-            const response = document.getElementById('apocalyptic-textarea').value.trim() || "(Se quedó sin palabras ante el horror)";
+            const response = document.getElementById('apocalyptic-textarea').value.trim() || "(Se quedó en blanco ante el horror 😱)";
             const round = localGameState.currentRound;
             
-            document.getElementById('waiting-text').textContent = "Respuesta enviada. Esperando al resto...";
+            document.getElementById('waiting-text').textContent = "¡Respuesta enviada! Esperando al resto...";
             showScreen('waiting');
             
             set(ref(db, `games/${currentLobbyCode}/responses/round_${round}/${myTeamId}/apocalyptic`), response)
@@ -838,11 +841,10 @@
             if (document.getElementById('screen-waiting').classList.contains('hidden') === false) return;
             
             if (currentTimer) clearInterval(currentTimer);
-            // Texto de fallback más neutral
-            const response = document.getElementById('realist-textarea').value.trim() || "(No hay nada que salvar. Estamos perdidos.)";
+            const response = document.getElementById('realist-textarea').value.trim() || "(No hay nada que salvar. Estamos perdidos. 💀)";
             const round = localGameState.currentRound;
 
-            document.getElementById('waiting-text').textContent = "Respuesta enviada. Esperando al resto...";
+            document.getElementById('waiting-text').textContent = "¡Respuesta enviada! Esperando al resto...";
             showScreen('waiting');
             
             set(ref(db, `games/${currentLobbyCode}/responses/round_${round}/${myTeamId}/realist`), response)
@@ -900,11 +902,11 @@
                     <div class="card p-6">
                         <h4 class="font-title text-2xl text-cyan-400 mb-4">${teamName}</h4>
                         <div class="mb-4 bg-black/20 p-3 rounded-lg">
-                            <p class="text-xs text-red-400 font-bold uppercase tracking-wider">El Apocalíptico dijo:</p>
+                            <p class="text-xs text-red-400 font-bold uppercase tracking-wider">El Peor Final ☠️:</p>
                             <p class="italic text-gray-200 text-lg">${apocalypticText}</p>
                         </div>
                         <div class="bg-black/20 p-3 rounded-lg">
-                            <p class="text-xs text-cyan-400 font-bold uppercase tracking-wider">El Realista dijo:</p>
+                            <p class="text-xs text-cyan-400 font-bold uppercase tracking-wider">El Arreglo 🔧:</p>
                             <p class="text-gray-200 text-lg">${realistText}</p>
                         </div>
                         <div class="flex flex-col sm:flex-row justify-between mt-6 gap-3">
@@ -912,13 +914,13 @@
                                 ${pessimistVoted ? 'opacity-50 cursor-not-allowed' : ''}
                                 ${myPessimistVoteFor === teamId ? 'bg-red-600 ring-2 ring-white' : ''}" 
                                 data-vote-type="pessimist" data-team-id="${teamId}" ${pessimistVoted ? 'disabled' : ''}>
-                                El Pesimismo más Creativo
+                                ¡El Peor Final! ☠️
                             </button>
                             <button class="vote-btn btn flex-1 bg-gray-700 hover:bg-cyan-600 text-white font-medium py-3 px-4 rounded-lg
                                 ${moderatorVoted ? 'opacity-50 cursor-not-allowed' : ''}
                                 ${myModeratorVoteFor === teamId ? 'bg-cyan-600 ring-2 ring-white' : ''}" 
                                 data-vote-type="moderator" data-team-id="${teamId}" ${moderatorVoted ? 'disabled' : ''}>
-                                La Moderación más Persuasiva
+                                ¡El Mejor Arreglo! 🔧
                             </button>
                         </div>
                     </div>
@@ -1040,6 +1042,7 @@
         
         function updateScoresUI() {
             const round = localGameState.currentRound;
+            const votes = localGameState.votes?.[`round_${round}`] || {};
             const roundScores = localGameState.roundScores?.[`round_${round}`] || {};
             const teams = localGameState.teams || {};
 
@@ -1048,28 +1051,65 @@
             roundScoresList.innerHTML = '';
             totalScoresList.innerHTML = '';
 
-            const sortedTeams = Object.entries(teams).sort(([, a], [, b]) => b.score - a.score);
+            // --- Lógica de Ganadores de Ronda (para "competición") ---
+            const voteCounts = { pessimist: {}, moderator: {} };
+            Object.values(votes).forEach(vote => {
+                if (vote.creativePessimist) {
+                    voteCounts.pessimist[vote.creativePessimist] = (voteCounts.pessimist[vote.creativePessimist] || 0) + 1;
+                }
+                if (vote.persuasiveModerator) {
+                    voteCounts.moderator[vote.persuasiveModerator] = (voteCounts.moderator[vote.persuasiveModerator] || 0) + 1;
+                }
+            });
 
-            if (Object.keys(roundScores).length > 0) {
-                sortedTeams.forEach(([teamId, teamData]) => {
-                    const score = roundScores[teamId] || 0;
-                    if (score > 0) {
-                        const el = document.createElement('div');
-                        el.className = "flex justify-between items-center bg-gray-900/50 p-3 rounded";
-                        el.innerHTML = `<span class="font-medium text-lg">${teamData.name}</span><span class="font-bold text-amber-400 text-xl score-pulse">+${score}</span>`;
-                        roundScoresList.appendChild(el);
-                    }
-                });
-            } 
+            // Encontrar el teamId con más votos para cada categoría
+            const findWinner = (counts) => Object.keys(counts).reduce((a, b) => counts[a] > counts[b] ? a : b, null);
             
-            if (roundScoresList.innerHTML === '') {
-                roundScoresList.innerHTML = '<p class="text-gray-400">Nadie votó... qué deprimente.</p>';
+            const winnerPessimistId = findWinner(voteCounts.pessimist);
+            const winnerModeratorId = findWinner(voteCounts.moderator);
+
+            if (winnerPessimistId && teams[winnerPessimistId]) {
+                const score = (roundScores[winnerPessimistId] || 0) - (roundScores[winnerModeratorId] === winnerPessimistId ? (roundScores[winnerModeratorId] || 0) : 0);
+                roundScoresList.innerHTML += `
+                    <div class="bg-gray-900/50 p-4 rounded-lg">
+                        <span class="font-title text-xl text-red-500 block">¡EL PEOR FINAL! ☠️</span>
+                        <span class="text-lg">${teams[winnerPessimistId].name}</span>
+                        <span class="font-bold text-lime-400 text-xl score-pulse float-right">+100</span>
+                    </div>`;
+            } else {
+                 roundScoresList.innerHTML += `
+                    <div class="bg-gray-900/50 p-4 rounded-lg opacity-60">
+                        <span class="font-title text-xl text-red-500 block">¡EL PEOR FINAL! ☠️</span>
+                        <span class="text-lg">Nadie ganó...</span>
+                    </div>`;
             }
 
+            if (winnerModeratorId && teams[winnerModeratorId]) {
+                 roundScoresList.innerHTML += `
+                    <div class="bg-gray-900/50 p-4 rounded-lg">
+                        <span class="font-title text-xl text-cyan-500 block">¡EL MEJOR ARREGLO! 🔧</span>
+                        <span class="text-lg">${teams[winnerModeratorId].name}</span>
+                        <span class="font-bold text-lime-400 text-xl score-pulse float-right">+100</span>
+                    </div>`;
+            } else {
+                 roundScoresList.innerHTML += `
+                    <div class="bg-gray-900/50 p-4 rounded-lg opacity-60">
+                        <span class="font-title text-xl text-cyan-500 block">¡EL MEJOR ARREGLO! 🔧</span>
+                        <span class="text-lg">Nadie ganó...</span>
+                    </div>`;
+            }
+            
+            // --- Lógica de Leaderboard (para "competición") ---
+            const sortedTeams = Object.entries(teams).sort(([, a], [, b]) => b.score - a.score);
+
             sortedTeams.forEach(([teamId, teamData], index) => {
+                const medal = ['🏆', '🥈', '🥉'][index] || `<span class="text-gray-500 text-lg w-6">${index + 1}.</span>`;
                 const el = document.createElement('div');
-                el.className = "flex justify-between items-center bg-gray-900/50 p-4 rounded-lg";
-                el.innerHTML = `<span class="font-bold text-xl">${index + 1}. ${teamData.name}</span><span class="font-extrabold text-3xl text-cyan-400">${teamData.score}</span>`;
+                el.className = `flex justify-between items-center bg-gray-900/50 p-4 rounded-lg ${index === 0 ? 'border-2 border-lime-400' : 'border-2 border-transparent'}`;
+                el.innerHTML = `
+                    <span class="font-bold text-xl flex items-center gap-3">${medal} ${teamData.name}</span>
+                    <span class="font-extrabold text-3xl text-cyan-400">${teamData.score}</span>
+                `;
                 totalScoresList.appendChild(el);
             });
             
@@ -1120,10 +1160,14 @@
                 document.getElementById('winner-team-name').textContent = winner.name;
 
                 sortedTeams.forEach(([teamId, teamData], index) => {
+                    const medal = ['🏆', '🥈', '🥉'][index] || `<span class="text-gray-500 text-lg w-6">${index + 1}.</span>`;
                     const el = document.createElement('div');
-                    // Color de ganador revertido a "amber"
-                    el.className = `flex justify-between items-center p-4 rounded-lg ${index === 0 ? 'bg-amber-600/50' : 'bg-gray-900/50'}`;
-                    el.innerHTML = `<span class="font-bold text-xl">${index === 0 ? '🏆' : (index + 1 + '.')} ${teamData.name}</span><span class="font-extrabold text-3xl text-white">${teamData.score}</span>`;
+                    // Color de ganador revertido a "lime"
+                    el.className = `flex justify-between items-center p-4 rounded-lg ${index === 0 ? 'bg-lime-600/50' : 'bg-gray-900/50'}`;
+                    el.innerHTML = `
+                        <span class="font-bold text-xl flex items-center gap-3">${medal} ${teamData.name}</span>
+                        <span class="font-extrabold text-3xl text-white">${teamData.score}</span>
+                    `;
                     finalScoresList.appendChild(el);
                 });
 
