@@ -105,37 +105,65 @@
             measurementId: "G-TYE4V0P8XB"
         };
         
-        // --- BANCO DE FRASES AMPLIADO ---
+        // --- BANCO DE FRASES AMPLIADO Y REVISADO ---
         // 'r' = Realista, 'p' = Pesimista
-        const PHRASES = [
-            // Fáciles
-            { text: "Eventualmente, todo lo que tiene un principio tiene un fin.", answer: 'r' },
-            { text: "El sol saldrá mañana, sin importar lo que pase hoy.", answer: 'r' },
-            { text: "Confiar ciegamente en desconocidos te hace vulnerable.", answer: 'r' },
-            { text: "Nadie consigue todo lo que quiere en la vida.", answer: 'r' },
-            { text: "Toda buena racha está destinada a terminarse.", answer: 'p' },
-            { text: "La gente siempre actuará en su propio interés, incluso a costa tuya.", answer: 'p' },
-            { text: "Es mejor no esperar nada para nunca sentirse decepcionado.", answer: 'p' },
-            { text: "Cualquier cosa que pueda salir mal, saldrá mal.", answer: 'p' },
+const PHRASES = [
+    // Frases (Realistas)
+    { text: "Eventualmente, todo lo que tiene un principio tiene un fin.", answer: 'r' },
+    { text: "El sol saldrá mañana, sin importar lo que pase hoy.", answer: 'r' },
+    { text: "Confiar ciegamente en desconocidos te hace vulnerable.", answer: 'r' },
+    { text: "Nadie consigue todo lo que quiere en la vida.", answer: 'r' },
+    { text: "No importa cuánto te esfuerces, el fracaso siempre es una posibilidad.", answer: 'r' },
+    { text: "Las estadísticas de accidentes aumentan significativamente durante los días festivos.", answer: 'r' },
+    { text: "Un pequeño porcentaje de la población controla la mayoría de los recursos globales.", answer: 'r' },
+    { text: "Incluso las decisiones mejor informadas pueden tener resultados negativos.", answer: 'r' },
+    { text: "La historia humana está definida por el conflicto, no por la paz.", answer: 'r' },
+    { text: "La memoria humana es inherentemente poco fiable.", answer: 'r' },
+    { text: "El universo tiende a la entropía y el caos.", answer: 'r' },
+    { text: "La felicidad es un estado químico temporal en el cerebro.", answer: 'r' },
+    { text: "No le puedes caer bien a todo el mundo.", answer: 'r' },
+    { text: "Todas las personas cometen errores.", answer: 'r' },
+    { text: "Las cosas materiales no duran para siempre.", answer: 'r' },
+    { text: "Siempre habrá alguien mejor que tú en algo.", answer: 'r' },
+    { text: "El trabajo duro no siempre garantiza el éxito.", answer: 'r' },
+    { text: "El cuerpo humano envejece y eventualmente falla.", answer: 'r' },
+    { text: "Los recursos naturales del planeta son finitos.", answer: 'r' },
+    { text: "No puedes controlar las acciones o sentimientos de otras personas.", answer: 'r' },
+    { text: "El pasado no se puede cambiar.", answer: 'r' },
+    { text: "La vida requiere esfuerzo para mantenerse (comida, refugio, salud).", answer: 'r' },
+    { text: "Cada elección tiene una consecuencia, positiva o negativa.", answer: 'r' },
+    { text: "No todas las oportunidades se presentan dos veces.", answer: 'r' },
+    { text: "A veces, hacer lo correcto no trae recompensa.", answer: 'r' },
+    { text: "No siempre obtienes lo que mereces.", answer: 'r' },
+    { text: "El tiempo no soluciona los problemas por sí solo; necesitas actuar.", answer: 'r' },
 
-            // Medias
-            { text: "No importa cuánto te esfuerces, el fracaso siempre es una posibilidad.", answer: 'r' },
-            { text: "Las estadísticas de accidentes aumentan significativamente durante los días festivos.", answer: 'r' },
-            { text: "Un pequeño porcentaje de la población controla la mayoría de los recursos globales.", answer: 'r' },
-            { text: "Incluso las decisiones mejor informadas pueden tener resultados negativos.", answer: 'r' },
-            { text: "La esperanza es solo una negación de la realidad.", answer: 'p' },
-            { text: "Confiar en los demás es la forma más rápida de salir lastimado.", answer: 'p' },
-            { text: "Al final, estás fundamentalmente solo.", answer: 'p' },
+    // Frases (Pesimistas)
+    { text: "Toda buena racha está destinada a terminarse.", answer: 'p' },
+    { text: "La gente siempre actuará en su propio interés, incluso a costa tuya.", answer: 'p' },
+    { text: "Es mejor no esperar nada para nunca sentirse decepcionado.", answer: 'p' },
+    { text: "Cualquier cosa que pueda salir mal, saldrá mal.", answer: 'p' },
+    { text: "La esperanza es solo una negación de la realidad.", answer: 'p' },
+    { text: "Confiar en los demás es la forma más rápida de salir lastimado.", answer: 'p' },
+    { text: "Al final, estás fundamentalmente solo.", answer: 'p' },
+    { text: "No puedes cambiar quién eres fundamentalmente.", answer: 'p' },
+    { text: "Todo esfuerzo es, en última instancia, inútil frente a la inmensidad del tiempo.", answer: 'p' },
+    { text: "Tus logros serán olvidados.", answer: 'p' },
+    { text: "La gente te decepcionará en cuanto tenga la oportunidad.", answer: 'p' },
+    { text: "El futuro solo puede ser peor que el presente.", answer: 'p' },
+    { text: "Cualquier acto de bondad esconde un motivo egoísta.", answer: 'p' },
+    { text: "Las cosas nunca mejorarán.", answer: 'p' },
+    { text: "No importa lo que hagas, al final fracasarás.", answer: 'p' },
+    { text: "La gente solo te ayuda si puede obtener algo a cambio.", answer: 'p' },
+    { text: "El mundo está diseñado para que la gente buena pierda.", answer: 'p' },
+    { text: "Es inútil intentar cambiar las cosas, todo seguirá igual de mal.", answer: 'p' },
+    { text: "La confianza es solo una debilidad que otros explotarán.", answer: 'p' },
+    { text: "Nunca serás verdaderamente feliz.", answer: 'p' },
+    { text: "El tiempo no cura nada; solo te acostumbras al dolor.", answer: 'p' },
+    { text: "Si algo parece demasiado bueno para ser verdad, seguro es mentira.", answer: 'p' },
+    { text: "El mundo es injusto por naturaleza y siempre lo será.", answer: 'p' },
+    { text: "Todo lo que construyas terminará derrumbándose tarde o temprano.", answer: 'p' },
+];
 
-            // Difíciles / Ambiguas
-            { text: "La historia humana está definida por el conflicto, no por la paz.", answer: 'r' },
-            { text: "La memoria humana es inherentemente poco fiable.", answer: 'r' },
-            { text: "No puedes cambiar quién eres fundamentalmente.", answer: 'p' },
-            { text: "El universo tiende a la entropía y el caos.", answer: 'r' },
-            { text: "Todo esfuerzo es, en última instancia, inútil frente a la inmensidad del tiempo.", answer: 'p' },
-            { text: "La felicidad es un estado químico temporal en el cerebro.", answer: 'r' },
-            { text: "Tus logros serán olvidados.", answer: 'p' }
-        ];
 
         // --- VARIABLES GLOBALES ---
         const app = initializeApp(firebaseConfig);
