@@ -30,6 +30,16 @@
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
+        
+        /* Animación de pulso para eventos */
+        .animate-pulse {
+            animation: pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
 
         /* Estilo de botones base */
         .btn {
@@ -95,24 +105,36 @@
             measurementId: "G-TYE4V0P8XB"
         };
         
-        // --- BANCO DE FRASES ---
+        // --- BANCO DE FRASES AMPLIADO ---
         // 'r' = Realista, 'p' = Pesimista
-        // Ordenadas de más fácil a más difícil/ambiguo
         const PHRASES = [
+            // Fáciles
             { text: "Eventualmente, todo lo que tiene un principio tiene un fin.", answer: 'r' },
-            { text: "No importa cuánto te esfuerces, el fracaso siempre es una posibilidad.", answer: 'r' },
-            { text: "La gente siempre actuará en su propio interés, incluso a costa tuya.", answer: 'p' },
             { text: "El sol saldrá mañana, sin importar lo que pase hoy.", answer: 'r' },
+            { text: "Confiar ciegamente en desconocidos te hace vulnerable.", answer: 'r' },
+            { text: "Nadie consigue todo lo que quiere en la vida.", answer: 'r' },
             { text: "Toda buena racha está destinada a terminarse.", answer: 'p' },
+            { text: "La gente siempre actuará en su propio interés, incluso a costa tuya.", answer: 'p' },
+            { text: "Es mejor no esperar nada para nunca sentirse decepcionado.", answer: 'p' },
+            { text: "Cualquier cosa que pueda salir mal, saldrá mal.", answer: 'p' },
+
+            // Medias
+            { text: "No importa cuánto te esfuerces, el fracaso siempre es una posibilidad.", answer: 'r' },
             { text: "Las estadísticas de accidentes aumentan significativamente durante los días festivos.", answer: 'r' },
-            { text: "Confiar en los demás es la forma más rápida de salir lastimado.", answer: 'p' },
             { text: "Un pequeño porcentaje de la población controla la mayoría de los recursos globales.", answer: 'r' },
-            { text: "La mayoría de las relaciones humanas están basadas en la conveniencia mutua.", answer: 'p' },
-            { text: "La esperanza es solo una negación de la realidad.", answer: 'p' },
             { text: "Incluso las decisiones mejor informadas pueden tener resultados negativos.", answer: 'r' },
+            { text: "La esperanza es solo una negación de la realidad.", answer: 'p' },
+            { text: "Confiar en los demás es la forma más rápida de salir lastimado.", answer: 'p' },
             { text: "Al final, estás fundamentalmente solo.", answer: 'p' },
+
+            // Difíciles / Ambiguas
             { text: "La historia humana está definida por el conflicto, no por la paz.", answer: 'r' },
-            { text: "Es mejor no esperar nada para nunca sentirse decepcionado.", answer: 'p' }
+            { text: "La memoria humana es inherentemente poco fiable.", answer: 'r' },
+            { text: "No puedes cambiar quién eres fundamentalmente.", answer: 'p' },
+            { text: "El universo tiende a la entropía y el caos.", answer: 'r' },
+            { text: "Todo esfuerzo es, en última instancia, inútil frente a la inmensidad del tiempo.", answer: 'p' },
+            { text: "La felicidad es un estado químico temporal en el cerebro.", answer: 'r' },
+            { text: "Tus logros serán olvidados.", answer: 'p' }
         ];
 
         // --- VARIABLES GLOBALES ---
@@ -126,6 +148,7 @@
         
         const appElement = document.getElementById('app');
         const gameRef = ref(db, 'la-prueba/game');
+        const hostIdRef = ref(db, 'la-prueba/hostId');
 
         // --- FUNCIÓN PRINCIPAL ---
         function main() {
@@ -139,6 +162,7 @@
 
         // Escapar HTML para evitar XSS
         function escapeHTML(str) {
+            if (typeof str !== 'string') return '';
             return str.replace(/[&<>"']/g, function(m) {
                 return {
                     '&': '&amp;',
@@ -192,19 +216,38 @@
         function renderHostRound(phrase, players) {
             const survivors = Object.values(players).filter(p => !p.isEliminated);
             const votes = survivors.filter(p => p.vote).length;
+            const votePercentage = survivors.length > 0 ? (votes / survivors.length) * 100 : 0;
+            const isSuddenDeath = gameState.specialEvent === 'sudden_death';
 
+            // --- INICIO DE RENDERIZADO INTELIGENTE ---
+            // Si ya estamos en esta vista, solo actualiza los datos dinámicos
+            const voteCounter = document.getElementById('vote-counter');
+            if (voteCounter && document.getElementById('phrase-text')?.textContent === `"${escapeHTML(phrase.text)}"`) {
+                voteCounter.textContent = `Votos recibidos: ${votes} / ${survivors.length}`;
+                document.getElementById('vote-progress-bar').style.width = `${votePercentage}%`;
+                return; // No re-renderizar todo, evita que la animación "fade-in" se repita
+            }
+            // --- FIN DE RENDERIZADO INTELIGENTE ---
+
+            // Renderizado completo si es una nueva ronda
             appElement.innerHTML = `
                 <div class="text-center fade-in max-w-3xl mx-auto">
                     <p class="text-gray-500 text-lg mb-4">Ronda ${gameState.currentRound + 1}</p>
-                    <h1 class="text-4xl font-bold text-white mb-12 leading-relaxed">
+                    
+                    ${isSuddenDeath ? `<h2 class="text-5xl font-bold text-red-700 mb-6 animate-pulse">¡MUERTE SÚBITA!</h2>` : ''}
+
+                    <h1 id="phrase-text" class="text-4xl font-bold text-white mb-12 leading-relaxed">
                         "${escapeHTML(phrase.text)}"
                     </h1>
-                    <h2 class="text-2xl text-gray-400 mb-8">
-                        ¿Pesimista o Realista?
-                    </h2>
-                    <p class="text-xl text-white mb-4">Votos recibidos: ${votes} / ${survivors.length}</p>
+
+                    ${isSuddenDeath ? 
+                        `<p class="text-2xl text-red-400 mb-8">¡Fallar esta ronda significa la eliminación instantánea!</p>` : 
+                        `<h2 class="text-2xl text-gray-400 mb-8">¿Pesimista o Realista?</h2>`
+                    }
+                    
+                    <p id="vote-counter" class="text-xl text-white mb-4">Votos recibidos: ${votes} / ${survivors.length}</p>
                     <div class="w-full bg-gray-800 rounded-full h-2.5 mb-8">
-                        <div class="bg-green-500 h-2.5 rounded-full" style="width: ${survivors.length > 0 ? (votes / survivors.length) * 100 : 0}%"></div>
+                        <div id="vote-progress-bar" class="bg-green-500 h-2.5 rounded-full transition-all duration-300" style="width: ${votePercentage}%"></div>
                     </div>
                     <button id="revealBtn" class="btn btn-danger w-auto mx-auto">
                         Finalizar Ronda y Revelar
@@ -230,7 +273,7 @@
                         <div>
                             <h2 class="text-2xl text-green-500 font-bold mb-4">SOBREVIVIENTES (${survivors.length})</h2>
                             <div class="space-y-2 max-h-60 overflow-y-auto">
-                                ${survivors.map(p => `<div class="player-list-item survivor">${escapeHTML(p.name)}</div>`).join('')}
+                                ${survivors.map(p => `<div class="player-list-item survivor">${escapeHTML(p.name)} (Vidas: ${p.lives ?? 0})</div>`).join('')}
                             </div>
                         </div>
                         <div>
@@ -287,13 +330,22 @@
         }
 
         function renderPlayerVote(phrase) {
+            const isSuddenDeath = gameState.specialEvent === 'sudden_death';
             appElement.innerHTML = `
                 <div class="text-center fade-in max-w-2xl mx-auto">
                     <p class="text-gray-500 text-lg mb-4">Ronda ${gameState.currentRound + 1}</p>
+                    
+                    ${isSuddenDeath ? `<h2 class="text-4xl font-bold text-red-700 mb-6 animate-pulse">¡MUERTE SÚBITA!</h2>` : ''}
+
                     <h1 class="text-3xl font-bold text-white mb-10 leading-relaxed">
                         "${escapeHTML(phrase.text)}"
                     </h1>
-                    <p class="text-xl text-gray-300 mb-8">Tu decisión:</p>
+
+                    ${isSuddenDeath ? 
+                        `<p class="text-xl text-red-400 mb-8">Si fallas, pierdes todas tus vidas.</p>` : 
+                        `<p class="text-xl text-gray-300 mb-8">Tu decisión:</p>`
+                    }
+
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                         <button id="voteP" class="btn btn-danger">Pesimista</button>
                         <button id="voteR" class="btn btn-secondary">Realista</button>
@@ -313,14 +365,18 @@
             `;
         }
         
-        function renderPlayerResult(isCorrect) {
+        function renderPlayerResult(isCorrect, lives) {
+             const lifeMessage = isCorrect ? 
+                'Sobrevives... por ahora.' : 
+                (lives > 0 ? `Has perdido una vida. Te quedan ${lives}.` : 'Un error te cuesta todo.');
+
              appElement.innerHTML = `
                 <div class="text-center fade-in max-w-md mx-auto">
                     <h1 class="text-5xl font-bold ${isCorrect ? 'text-green-500' : 'text-red-500'} mb-8">
                         ${isCorrect ? 'CORRECTO' : 'INCORRECTO'}
                     </h1>
                     <p class="text-2xl text-gray-300">
-                        ${isCorrect ? 'Sobrevives... por ahora.' : 'Un error te cuesta todo.'}
+                        ${lifeMessage}
                     </p>
                     <p class="text-xl text-gray-500 mt-10">Esperando la siguiente ronda...</p>
                 </div>
@@ -356,31 +412,41 @@
         
         function joinAsHost() {
             isHost = true;
-            console.log("Uniéndose como Host");
+            console.log("Intentando unirse como Host");
+            
             // Comprobar si ya hay un host
-            onValue(ref(db, 'la-prueba/hostId'), (snapshot) => {
+            onValue(hostIdRef, (snapshot) => {
                 const currentHostId = snapshot.val();
-                if (currentHostId && currentHostId !== localUserId) { // Usa localUserId
+                // Si hay un host Y ese host NO soy yo, no puedo ser host
+                if (currentHostId && currentHostId !== localUserId) {
                     alert("¡Error! Ya hay un presentador en esta sala. Únete como jugador.");
                     renderInitialScreen();
                     isHost = false;
                 } else {
+                    // No hay host, o el host soy yo (refresqué la página)
                     // Tomar control como host
-                    set(ref(db, 'la-prueba/hostId'), localUserId); // Usa localUserId
-                    onDisconnect(ref(db, 'la-prueba/hostId')).remove();
-                    initGame();
+                    set(hostIdRef, localUserId); 
+                    onDisconnect(hostIdRef).remove(); // Si me voy, dejo el puesto libre
+                    
+                    // No reiniciamos el juego, solo nos conectamos a él
                     setupHostListener();
                 }
-            }, { onlyOnce: true });
+            }, { onlyOnce: true }); // Solo comprobar una vez
         }
 
         // Inicializa o resetea el juego
         function initGame() {
+            console.log("INICIALIZANDO JUEGO NUEVO");
+            // Crear la lista de frases aleatorias
+            const shuffledIndices = [...Array(PHRASES.length).keys()].sort(() => Math.random() - 0.5);
+
             set(gameRef, {
                 state: 'lobby',
                 players: {},
                 currentRound: -1,
                 currentPhrase: null,
+                shuffledPhraseIndices: shuffledIndices, // Guardar el orden aleatorio
+                specialEvent: null,
                 winner: null
             });
         }
@@ -388,13 +454,15 @@
         // El Host inicia la siguiente ronda
         function startNextRound() {
             const currentRound = gameState.currentRound + 1;
-            if (currentRound >= PHRASES.length) {
+            const phraseIndex = gameState.shuffledPhraseIndices[currentRound];
+
+            if (typeof phraseIndex === 'undefined') {
                 // Se acabaron las frases
                 triggerGameOver();
                 return;
             }
 
-            const newPhrase = PHRASES[currentRound];
+            const newPhrase = PHRASES[phraseIndex];
             
             // Resetear votos de jugadores no eliminados
             const players = gameState.players || {};
@@ -406,6 +474,13 @@
                 }
             });
             
+            // Decidir si hay un evento especial
+            let eventType = null;
+            if (Math.random() < 0.25) { // 25% de probabilidad
+                eventType = 'sudden_death';
+            }
+            updates['/specialEvent'] = eventType;
+
             updates['/state'] = 'round';
             updates['/currentRound'] = currentRound;
             updates['/currentPhrase'] = newPhrase;
@@ -418,14 +493,25 @@
             const answer = gameState.currentPhrase.answer;
             const players = gameState.players || {};
             const updates = {};
+            const isSuddenDeath = gameState.specialEvent === 'sudden_death';
             
             Object.keys(players).forEach(pid => {
                 const player = players[pid];
                 if (!player.isEliminated) {
                     const isCorrect = player.vote === answer;
                     updates[`/players/${pid}/isCorrect`] = isCorrect;
+                    
                     if (!isCorrect) {
-                        updates[`/players/${pid}/isEliminated`] = true;
+                        if (isSuddenDeath) {
+                            updates[`/players/${pid}/lives`] = 0;
+                            updates[`/players/${pid}/isEliminated`] = true;
+                        } else {
+                            const newLives = (player.lives || 2) - 1; // Default a 2 vidas si no existe
+                            updates[`/players/${pid}/lives`] = newLives;
+                            if (newLives <= 0) {
+                                updates[`/players/${pid}/isEliminated`] = true;
+                            }
+                        }
                     }
                 }
             });
@@ -442,7 +528,7 @@
 
             update(gameRef, {
                 state: 'gameover',
-                winner: winnerName || (survivors.length > 1 ? "Empate de sobrevivientes" : "Nadie")
+                winner: winnerName || (survivors.length > 1 ? "Empate" : "Nadie")
             });
         }
 
@@ -460,6 +546,7 @@
             set(playerRef, {
                 id: localUserId, // Usa localUserId
                 name: name,
+                lives: 2, // Empezar con 2 vidas
                 isEliminated: false,
                 vote: null,
                 isCorrect: null
@@ -489,6 +576,12 @@
                     return;
                 }
                 gameState = snapshot.val();
+                // Si el juego existe pero no tiene frases (juego antiguo), reinícialo
+                if (!gameState.shuffledPhraseIndices) {
+                    initGame();
+                    return;
+                }
+
                 const { state, players = {}, currentPhrase, winner } = gameState;
 
                 switch (state) {
@@ -547,7 +640,7 @@
                         }
                         break;
                     case 'reveal':
-                        renderPlayerResult(myData.isCorrect);
+                        renderPlayerResult(myData.isCorrect, myData.lives);
                         break;
                     case 'gameover':
                         renderPlayerGameOver(winner);
