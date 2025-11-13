@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>¿Pesimista o Realista?</title>
+    <title>La Decisión</title>
     <!-- Carga de Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -29,99 +29,110 @@
         /* Estilo para jugadores eliminados */
         .player-item.eliminated {
             text-decoration: line-through;
-            opacity: 0.5;
+            opacity: 0.4;
+            background-color: #374151; /* bg-gray-700 */
         }
-        /* Indicador de voto */
+        /* Indicador de voto (más sutil) */
         .player-item.voted::after {
-            content: '✓';
-            color: #10b981; /* Verde de Tailwind */
-            font-weight: bold;
+            content: '■';
+            color: #facc15; /* yellow-500 */
+            font-size: 10px;
             margin-left: 8px;
+            vertical-align: middle;
         }
     </style>
 </head>
-<body class="bg-gray-900 text-white min-h-screen flex items-center justify-center p-4">
+<body class="bg-black text-gray-300 min-h-screen flex items-center justify-center p-4">
 
     <!-- Contenedor principal del juego -->
-    <div id="app-container" class="w-full max-w-lg mx-auto bg-gray-800 rounded-xl shadow-2xl p-6 md:p-8">
+    <div id="app-container" class="w-full max-w-lg mx-auto bg-gray-900 rounded-lg border border-gray-700 p-6 md:p-8">
 
         <!-- 1. Pantalla de Unirse (Join Screen) -->
         <div id="join-screen" class="screen active fade-in">
-            <h1 class="text-3xl md:text-4xl font-black text-center mb-6">¿Pesimista o Realista?</h1>
-            <p class="text-center text-gray-400 mb-8">Un juego de supervivencia social.</p>
+            <h1 class="text-3xl md:text-4xl font-black text-center mb-6">La Decisión</h1>
+            <p class="text-center text-gray-500 mb-8">Solo puede quedar uno.</p>
             <div class="space-y-4">
-                <input type="text" id="player-name" placeholder="Tu nombre" class="w-full p-3 bg-gray-700 text-white rounded-lg border border-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500" maxlength="15">
-                <input type="text" id="game-id-input" placeholder="ID del Juego (para unirte)" class="w-full p-3 bg-gray-700 text-white rounded-lg border border-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500" maxlength="5">
-                <button id="join-button" class="w-full p-3 bg-purple-600 hover:bg-purple-700 rounded-lg font-bold text-lg transition-colors shadow-lg">Unirse al Juego</button>
-                <button id="host-button" class="w-full p-3 bg-green-600 hover:bg-green-700 rounded-lg font-bold text-lg transition-colors shadow-lg">Crear Juego Nuevo</button>
+                <input type="text" id="player-name" placeholder="Identificador" class="w-full p-3 bg-gray-800 text-white rounded-lg border border-gray-700 focus:outline-none focus:ring-2 focus:ring-red-500" maxlength="15">
+                <input type="text" id="game-id-input" placeholder="ID de la Partida (para unirte)" class="w-full p-3 bg-gray-800 text-white rounded-lg border border-gray-700 focus:outline-none focus:ring-2 focus:ring-red-500" maxlength="5">
+                <button id="join-button" class="w-full p-3 bg-gray-700 hover:bg-gray-600 rounded-lg font-bold text-lg transition-colors">Entrar</button>
+                <button id="host-button" class="w-full p-3 bg-gray-700 hover:bg-gray-600 rounded-lg font-bold text-lg transition-colors">Iniciar Partida</button>
             </div>
             <p id="join-error" class="text-red-400 text-center mt-4"></p>
         </div>
 
         <!-- 2. Pantalla de Espera (Lobby Screen) -->
         <div id="lobby-screen" class="screen">
-            <h2 class="text-2xl font-bold text-center mb-4">Sala de Espera</h2>
-            <div class="bg-gray-700 p-4 rounded-lg text-center mb-6">
-                <p class="text-gray-400">Comparte este ID con tus amigos:</p>
-                <span id="game-id-display" class="text-3xl font-black text-purple-300 tracking-widest">...</span>
+            <h2 class="text-2xl font-bold text-center mb-4">Sala de Contención</h2>
+            <div class="bg-gray-800 border border-gray-700 p-4 rounded-lg text-center mb-6">
+                <p class="text-gray-400">ID de la Partida:</p>
+                <span id="game-id-display" class="text-3xl font-black text-red-500 tracking-widest font-mono">...</span>
             </div>
-            <h3 class="font-bold text-lg mb-2">Jugadores Conectados:</h3>
-            <ul id="lobby-player-list" class="bg-gray-700 rounded-lg p-4 space-y-2 min-h-[100px]">
-                <!-- Jugadores se añadirán aquí dinámicamente -->
+            <h3 class="font-bold text-lg mb-2">Participantes: <span id="lobby-player-count">0</span></h3>
+            <ul id="lobby-player-list" class="bg-gray-800 rounded-lg p-4 space-y-2 min-h-[100px] border border-gray-700">
+                <!-- Participantes se añadirán aquí dinámicamente -->
             </ul>
-            <button id="start-button" class="w-full p-3 bg-green-600 hover:bg-green-700 rounded-lg font-bold text-lg transition-colors mt-6 shadow-lg">Empezar Juego</button>
+            <button id="start-button" class="w-full p-3 bg-yellow-600 hover:bg-yellow-700 text-black rounded-lg font-bold text-lg transition-colors mt-6">Comenzar Prueba</button>
         </div>
 
         <!-- 3. Pantalla de Juego (Game Screen) -->
         <div id="game-screen" class="screen">
-            <div id="round-info" class="text-center mb-4">
-                <span class="text-xl font-bold text-purple-300">Ronda <span id="round-number">1</span></span>
-                <div class="w-full bg-gray-600 rounded-full h-2.5 mt-2">
-                    <div id="timer-bar" class="bg-purple-600 h-2.5 rounded-full transition-all duration-1000 linear"></div>
+            <div id="round-info" class="mb-4">
+                <div class="flex justify-between text-lg mb-2">
+                    <span class="text-gray-400">Prueba <span id="round-number">1</span></span>
+                    <span class="text-yellow-500 font-bold">Vivos: <span id="game-survivors">0</span></span>
+                </div>
+                <div class="w-full bg-gray-700 rounded-full h-2.5">
+                    <div id="timer-bar" class="bg-red-700 h-2.5 rounded-full transition-all duration-1000 linear"></div>
                 </div>
             </div>
 
             <!-- Contenedor de la Frase -->
-            <div id="phrase-container" class="bg-gray-700 p-6 rounded-lg min-h-[150px] flex items-center justify-center text-center mb-6 shadow-inner">
+            <div id="phrase-container" class="bg-gray-800 border border-gray-700 p-6 rounded-lg min-h-[150px] flex items-center justify-center text-center mb-6">
                 <p id="phrase-text" class="text-xl md:text-2xl font-medium">...</p>
             </div>
 
             <!-- Contenedor de Votación -->
             <div id="vote-container">
-                <p class="text-center text-gray-400 mb-4">¿Qué es esta frase?</p>
+                <p class="text-center text-gray-400 mb-4">Toma tu decisión.</p>
                 <div class="grid grid-cols-2 gap-4">
-                    <button id="pessimist-button" class="p-4 bg-red-600 hover:bg-red-700 rounded-lg font-bold text-2xl transition-colors shadow-lg focus:outline-none focus:ring-2 focus:ring-red-400">Pesimista</button>
-                    <button id="realist-button" class="p-4 bg-blue-600 hover:bg-blue-700 rounded-lg font-bold text-2xl transition-colors shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-400">Realista</button>
+                    <button id="pessimist-button" class="p-4 bg-red-700 hover:bg-red-800 rounded-lg font-bold text-2xl transition-colors focus:outline-none focus:ring-2 focus:ring-red-400">Pesimista</button>
+                    <button id="realist-button" class="p-4 bg-gray-600 hover:bg-gray-700 rounded-lg font-bold text-2xl transition-colors focus:outline-none focus:ring-2 focus:ring-gray-400">Realista</button>
                 </div>
             </div>
 
             <!-- Contenedor de Espera -->
-            <div id="wait-container" class="text-center p-6 bg-gray-700 rounded-lg" style="display: none;">
-                <p class="text-xl text-gray-400">¡Voto registrado! Esperando a los demás...</p>
+            <div id="wait-container" class="text-center p-6 bg-gray-800 rounded-lg border border-gray-700" style="display: none;">
+                <p class="text-xl text-gray-400">Decisión registrada. Esperando...</p>
             </div>
         </div>
 
         <!-- 4. Pantalla de Resultados de Ronda -->
         <div id="results-screen" class="screen text-center">
-            <h2 class="text-2xl font-bold mb-4">Resultados de la Ronda</h2>
+            <h2 class="text-2xl font-bold mb-4">Evaluación</h2>
             <p class="text-lg mb-2">La respuesta correcta era:</p>
-            <span id="correct-answer" class="text-3xl font-black uppercase mb-6 block">...</span>
-            <p id="elimination-info" class="text-xl text-red-400 font-bold mb-4">...</p>
-            <p class="text-gray-400">Siguiente ronda en <span id="next-round-timer">5</span>...</p>
+            <span id="correct-answer" class="text-3xl font-black uppercase mb-4 block">...</span>
+            
+            <div class="flex justify-around text-xl mb-4 p-4 bg-gray-800 rounded-lg border border-gray-700">
+                <span class="text-green-500 font-bold">Vivos: <span id="results-survivors">0</span></span>
+                <span class="text-red-500 font-bold">Eliminados: <span id="results-eliminated">0</span></span>
+            </div>
+
+            <p id="elimination-info" class="text-xl text-red-400 font-bold mb-4 h-12">...</p>
+            <p class="text-gray-400">Siguiente prueba en <span id="next-round-timer">5</span>...</p>
         </div>
 
         <!-- 5. Pantalla de Fin de Juego -->
         <div id="game-over-screen" class="screen text-center">
-            <h2 class="text-4xl font-black mb-6">¡Juego Terminado!</h2>
-            <p id="winner-info" class="text-2xl text-green-400 mb-8">...</p>
-            <button id="play-again-button" class="w-full p-3 bg-purple-600 hover:bg-purple-700 rounded-lg font-bold text-lg transition-colors mt-6 shadow-lg">Jugar de Nuevo</button>
+            <h2 class="text-4xl font-black mb-6">PRUEBA FINALIZADA</h2>
+            <p id="winner-info" class="text-2xl text-yellow-500 mb-8">...</p>
+            <button id="play-again-button" class="w-full p-3 bg-yellow-600 hover:bg-yellow-700 text-black rounded-lg font-bold text-lg transition-colors mt-6">Reiniciar Protocolo</button>
         </div>
 
         <!-- Lista de Jugadores (Visible siempre durante el juego) -->
         <div id="player-list-container" class="mt-6" style="display: none;">
-            <h3 class="font-bold text-sm text-gray-400 mb-2 text-center uppercase tracking-wider">Jugadores</h3>
+            <h3 class="font-bold text-sm text-gray-400 mb-2 text-center uppercase tracking-wider">Participantes</h3>
             <ul id="game-player-list" class="flex flex-wrap justify-center gap-2">
-                <!-- Ejemplo: <li class="player-item bg-gray-700 p-2 px-3 rounded-full text-sm">Jugador 1</li> -->
+                <!-- Ejemplo: <li class="player-item bg-gray-800 p-2 px-3 rounded-full text-sm">Participante 1</li> -->
             </ul>
         </div>
     </div>
@@ -209,10 +220,12 @@
         const joinError = document.getElementById('join-error');
         const gameIdDisplay = document.getElementById('game-id-display');
         const lobbyPlayerList = document.getElementById('lobby-player-list');
+        const lobbyPlayerCount = document.getElementById('lobby-player-count'); // NUEVO
         const startButton = document.getElementById('start-button');
         const playerListContainer = document.getElementById('player-list-container');
         const gamePlayerList = document.getElementById('game-player-list');
         const roundNumber = document.getElementById('round-number');
+        const gameSurvivors = document.getElementById('game-survivors'); // NUEVO
         const timerBar = document.getElementById('timer-bar');
         const phraseText = document.getElementById('phrase-text');
         const voteContainer = document.getElementById('vote-container');
@@ -222,6 +235,8 @@
         const correctAnswer = document.getElementById('correct-answer');
         const eliminationInfo = document.getElementById('elimination-info');
         const nextRoundTimer = document.getElementById('next-round-timer');
+        const resultsSurvivors = document.getElementById('results-survivors'); // NUEVO
+        const resultsEliminated = document.getElementById('results-eliminated'); // NUEVO
         const winnerInfo = document.getElementById('winner-info');
         const playAgainButton = document.getElementById('play-again-button');
 
@@ -272,11 +287,11 @@
             const gameId = gameIdInput.value.trim().toUpperCase();
 
             if (!name) {
-                joinError.textContent = "Por favor, introduce tu nombre.";
+                joinError.textContent = "Por favor, introduce tu identificador.";
                 return;
             }
             if (!gameId) {
-                joinError.textContent = "Por favor, introduce un ID de juego.";
+                joinError.textContent = "Por favor, introduce un ID de partida.";
                 return;
             }
             // Comprobación de localUserId en lugar de currentUser
@@ -289,7 +304,7 @@
             const snapshot = await get(gameRef);
 
             if (!snapshot.exists()) {
-                joinError.textContent = "Juego no encontrado.";
+                joinError.textContent = "Partida no encontrada.";
                 return;
             }
 
@@ -297,7 +312,7 @@
 
             // Añadida comprobación de estado
             if (gameData.status !== 'lobby') {
-                joinError.textContent = "Este juego ya ha comenzado.";
+                joinError.textContent = "Esta partida ya ha comenzado.";
                 return;
             }
 
@@ -322,7 +337,7 @@
                 if (!state) {
                     // El juego fue borrado (quizás el host se fue)
                     // Se elimina alert() y se usa un método más limpio
-                    console.log("El juego ha terminado o fue borrado por el host.");
+                    console.log("La partida ha terminado o fue borrada.");
                     showScreen('join'); // Vuelve a la pantalla de inicio
                     // Resetea el estado local
                     currentGameId = null;
@@ -332,7 +347,7 @@
                         clearInterval(gameTimerInterval);
                         gameTimerInterval = null;
                     }
-                    joinError.textContent = "El juego ha terminado o fue borrado.";
+                    joinError.textContent = "La partida ha terminado o fue borrada.";
                     return;
                 }
                 
@@ -351,12 +366,15 @@
         function updateUI(state) {
             const players = state.players || {};
             const playerArray = Object.entries(players).map(([id, data]) => ({ id, ...data }));
+            const activePlayers = playerArray.filter(p => !p.isEliminated);
+            const eliminatedPlayers = playerArray.filter(p => p.isEliminated);
             
             // Actualizar estado de pantalla
             if (state.status === 'lobby') {
                 showScreen('lobby');
                 gameIdDisplay.textContent = currentGameId;
-                lobbyPlayerList.innerHTML = playerArray.map(p => `<li class="p-2">${p.name} ${state.hostId === p.id ? '👑' : ''}</li>`).join('');
+                lobbyPlayerList.innerHTML = playerArray.map(p => `<li class="p-2">${p.name}</li>`).join('');
+                lobbyPlayerCount.textContent = playerArray.length; // NUEVO
                 startButton.style.display = (isHost && playerArray.length > 0) ? 'block' : 'none';
             
             } else if (state.status === 'playing') {
@@ -364,17 +382,20 @@
                     showScreen('results');
                     correctAnswer.textContent = state.currentPhrase.type;
                     nextRoundTimer.textContent = state.timer;
+                    resultsSurvivors.textContent = activePlayers.length; // NUEVO
+                    resultsEliminated.textContent = eliminatedPlayers.length; // NUEVO
                     
                     const eliminatedThisRound = playerArray.filter(p => p.justEliminated);
                     if (eliminatedThisRound.length > 0) {
                         eliminationInfo.textContent = `Eliminados: ${eliminatedThisRound.map(p => p.name).join(', ')}`;
                     } else {
-                        eliminationInfo.textContent = "¡Nadie fue eliminado esta ronda!";
+                        eliminationInfo.textContent = "Nadie ha sido eliminado. Por ahora.";
                     }
 
                 } else {
                     showScreen('game');
                     roundNumber.textContent = state.currentRound;
+                    gameSurvivors.textContent = activePlayers.length; // NUEVO
                     phraseText.textContent = state.currentPhrase.text;
                     
                     // Barra de tiempo
@@ -388,17 +409,17 @@
                         // El Host (proyector) no vota, solo observa.
                         voteContainer.style.display = 'none';
                         waitContainer.style.display = 'block';
-                        waitContainer.firstElementChild.textContent = "Partida en curso... Esperando votos.";
+                        waitContainer.firstElementChild.textContent = "Prueba en curso... Esperando decisiones.";
                     
                     } else if (myData) { // Comprobar si myData existe (es un jugador)
                         if (myData.isEliminated) {
                             voteContainer.style.display = 'none';
                             waitContainer.style.display = 'block';
-                            waitContainer.firstElementChild.textContent = "Has sido eliminado. Esperando...";
+                            waitContainer.firstElementChild.textContent = "PARTICIPANTE ELIMINADO.";
                         } else if (myData.vote) {
                             voteContainer.style.display = 'none';
                             waitContainer.style.display = 'block';
-                            waitContainer.firstElementChild.textContent = "¡Voto registrado! Esperando...";
+                            waitContainer.firstElementChild.textContent = "Decisión registrada. Esperando...";
                         } else {
                             voteContainer.style.display = 'block';
                             waitContainer.style.display = 'none';
@@ -413,11 +434,12 @@
 
             } else if (state.status === 'finished') {
                 showScreen('gameOver');
-                const activePlayers = playerArray.filter(p => !p.isEliminated);
                 if (activePlayers.length === 1) {
-                    winnerInfo.textContent = `¡El ganador es ${activePlayers[0].name}!`;
+                    winnerInfo.textContent = `Superviviente: ${activePlayers[0].name}`;
+                } else if (activePlayers.length > 1) {
+                     winnerInfo.textContent = `Supervivientes: ${activePlayers.map(p => p.name).join(', ')}`;
                 } else {
-                    winnerInfo.textContent = "¡Es un empate!";
+                    winnerInfo.textContent = "Error en el sistema. No hay supervivientes.";
                 }
                 playAgainButton.style.display = isHost ? 'block' : 'none';
             }
@@ -425,9 +447,17 @@
             // Actualizar lista de jugadores persistente
             gamePlayerList.innerHTML = playerArray.map(p => {
                 let classes = "player-item p-2 px-3 rounded-full text-sm transition-all";
-                classes += p.isEliminated ? " eliminated bg-gray-600" : " bg-gray-700";
-                classes += (state.showResults && p.vote && !p.isEliminated) ? (p.vote === state.currentPhrase.type ? " border-2 border-green-500" : " border-2 border-red-500") : "";
-                classes += (!state.showResults && p.vote && !p.isEliminated) ? " voted" : "";
+                classes += p.isEliminated ? " eliminated" : " bg-gray-800 border border-gray-700";
+                
+                // Mostrar borde de voto solo en resultados
+                if (state.showResults && !p.isEliminated) {
+                    classes += (p.vote === state.currentPhrase.type) ? " border-2 border-green-500" : " border-2 border-red-500";
+                }
+                // Mostrar indicador de "ha votado" antes de los resultados
+                if (!state.showResults && p.vote && !p.isEliminated) {
+                    classes += " voted";
+                }
+                
                 return `<li class="${classes}">${p.name}</li>`;
             }).join('');
         }
@@ -526,9 +556,10 @@
             let eliminatedCount = 0;
             
             const activePlayerIds = Object.keys(players).filter(id => !players[id].isEliminated);
-            const wrongPlayerIds = activePlayerIds.filter(id => players[id].vote !== correctAnswer && players[id].vote !== null);
+            // CORRECCIÓN: Los que votan null (se acaba el tiempo) también son eliminados
+            const wrongPlayerIds = activePlayerIds.filter(id => players[id].vote !== correctAnswer);
             
-            // Lógica de eliminación: no eliminar si todos aciertan o todos fallan
+            // Lógica de eliminación: no eliminar si todos aciertan o todos fallan (o no votan)
             if (wrongPlayerIds.length > 0 && wrongPlayerIds.length < activePlayerIds.length) {
                 eliminatedCount = wrongPlayerIds.length;
                 wrongPlayerIds.forEach(id => {
@@ -620,7 +651,12 @@
             if (!currentGameId || !localUserId) return; // Se usa localUserId
 
             const playerRef = ref(db, `games/${currentGameId}/players/${localUserId}`); // Se usa localUserId
-            remove(playerRef); // Quitar al jugador
+            
+            // Solo quitar al jugador si no es el host.
+            // Si el host se va, el juego se borra.
+            if (!isHost) {
+                remove(playerRef); // Quitar al jugador
+            }
 
             if (isHost) {
                 // Si el host se va, borrar el juego
