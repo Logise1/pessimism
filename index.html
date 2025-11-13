@@ -458,21 +458,32 @@
 
         function handleHostLogic(state) {
             // Iniciar o detener el temporizador
-            if (state.status === 'playing' && !gameTimerInterval) {
-                gameTimerInterval = setInterval(handleGameTick, 1000);
+            // Cambiado de setInterval a una lógica de setTimeout recursivo
+            if (state.status === 'playing' && !gameTimerInterval) { 
+                // No hay un tick programado, y el juego está en marcha.
+                // ¡Iniciemos el bucle!
+                handleGameTick(); 
             } else if (state.status !== 'playing' && gameTimerInterval) {
-                clearInterval(gameTimerInterval);
+                // El juego no está en marcha, pero hay un tick programado.
+                // ¡Cancelémoslo!
+                clearTimeout(gameTimerInterval);
                 gameTimerInterval = null;
             }
+            // Si el juego está en marcha y ya hay un tick programado, no hacer nada.
+            // El bucle se autogestiona.
         }
 
         async function handleGameTick() {
+            // Primero, borramos el ID del timer actual,
+            // porque este tick se está ejecutando AHORA.
+            gameTimerInterval = null; 
+
+            // Comprobación de seguridad: ¿deberíamos seguir corriendo?
             if (!isHost || !localGameState || localGameState.status !== 'playing') {
-                clearInterval(gameTimerInterval);
-                gameTimerInterval = null;
-                return;
+                return; // Detener el bucle
             }
 
+            // Lógica del tick
             const gameRef = ref(db, `games/${currentGameId}`);
             let newTimer = localGameState.timer - 1;
 
@@ -497,6 +508,15 @@
                     await update(gameRef, { timer: newTimer });
                 }
             }
+
+            // Al final, volvemos a programar el siguiente tick SI es necesario
+            // onValue actualizará localGameState, así que leemos el estado MÁS RECIENTE
+            // de la base de datos (que está en localGameState después del await).
+            if (localGameState.status === 'playing') {
+                gameTimerInterval = setTimeout(handleGameTick, 1000);
+            }
+            // Si el estado cambió a 'finished' (por calculateResults o nextRound),
+            // gameTimerInterval seguirá siendo null, y el bucle se detiene.
         }
 
         async function calculateResults() {
