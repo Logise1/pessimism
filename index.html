@@ -202,74 +202,10 @@
         let isHost = false;
         let localGameState = null;
         let gameTimerInterval = null;
+        let isTickInProgress = false; // <-- AÑADIR ESTA LÍNEA (El bloqueo)
         const ROUND_TIME = 15; // segundos
         const RESULTS_TIME = 5; // segundos
-
-        // Referencias a elementos del DOM
-        const screens = {
-            join: document.getElementById('join-screen'),
-            lobby: document.getElementById('lobby-screen'),
-            game: document.getElementById('game-screen'),
-            results: document.getElementById('results-screen'),
-            gameOver: document.getElementById('game-over-screen')
-        };
-        const playerNameInput = document.getElementById('player-name');
-        const gameIdInput = document.getElementById('game-id-input');
-        const joinButton = document.getElementById('join-button');
-        const hostButton = document.getElementById('host-button');
-        const joinError = document.getElementById('join-error');
-        const gameIdDisplay = document.getElementById('game-id-display');
-        const lobbyPlayerList = document.getElementById('lobby-player-list');
-        const lobbyPlayerCount = document.getElementById('lobby-player-count'); // NUEVO
-        const startButton = document.getElementById('start-button');
-        const playerListContainer = document.getElementById('player-list-container');
-        const gamePlayerList = document.getElementById('game-player-list');
-        const roundNumber = document.getElementById('round-number');
-        const gameSurvivors = document.getElementById('game-survivors'); // NUEVO
-        const timerBar = document.getElementById('timer-bar');
-        const phraseText = document.getElementById('phrase-text');
-        const voteContainer = document.getElementById('vote-container');
-        const waitContainer = document.getElementById('wait-container');
-        const pessimistButton = document.getElementById('pessimist-button');
-        const realistButton = document.getElementById('realist-button');
-        const correctAnswer = document.getElementById('correct-answer');
-        const eliminationInfo = document.getElementById('elimination-info');
-        const nextRoundTimer = document.getElementById('next-round-timer');
-        const resultsSurvivors = document.getElementById('results-survivors'); // NUEVO
-        const resultsEliminated = document.getElementById('results-eliminated'); // NUEVO
-        const winnerInfo = document.getElementById('winner-info');
-        const playAgainButton = document.getElementById('play-again-button');
-
-        // --- AUTENTICACIÓN ---
-        // SE HA ELIMINADO TODA LA LÓGICA DE AUTH (signInAnonymously, onAuthStateChanged)
-
-        // --- NAVEGACIÓN DE PANTALLAS ---
-
-        function showScreen(screenName) {
-            Object.values(screens).forEach(screen => screen.classList.remove('active'));
-            if (screens[screenName]) {
-                screens[screenName].classList.add('active');
-            }
-            // Mostrar lista de jugadores persistente durante el juego
-            if (['game', 'results', 'gameOver'].includes(screenName)) {
-                playerListContainer.style.display = 'block';
-            } else {
-                playerListContainer.style.display = 'none';
-            }
-        }
-
-        // --- LÓGICA DE UNIRSE Y CREAR JUEGO ---
-
-        hostButton.onclick = async () => {
-            // El host ya no necesita nombre, solo crea la partida.
-            if (!localUserId) {
-                joinError.textContent = "Error de autenticación. Inténtalo de nuevo.";
-                return;
-            }
-
-            isHost = true;
-            currentGameId = Math.random().toString(36).substring(2, 7).toUpperCase();
-            
+ 
             const gameRef = ref(db, `games/${currentGameId}`);
             
             const initialGameState = {
@@ -508,12 +444,19 @@
         async function handleGameTick() {
             // Primero, borramos el ID del timer actual,
             // porque este tick se está ejecutando AHORA.
-            gameTimerInterval = null; 
+            // gameTimerInterval = null; // <-- MOVIDO: No borrar aquí, se controla en el setTimeout
 
             // Comprobación de seguridad: ¿deberíamos seguir corriendo?
             if (!isHost || !localGameState || localGameState.status !== 'playing') {
                 return; // Detener el bucle
             }
+
+            // --- INICIO DEL BLOQUEO ---
+            // Si ya hay un tick procesándose, no ejecutar este.
+            // El 'onValue' de la base de datos puede llamar a esto varias veces.
+            if (isTickInProgress) return;
+            isTickInProgress = true; // Poner el bloqueo
+            // --- FIN DEL BLOQUEO ---
 
             // Lógica del tick
             const gameRef = ref(db, `games/${currentGameId}`);
@@ -546,11 +489,15 @@
             // de la base de datos (que está en localGameState después del await).
             if (localGameState.status === 'playing') {
                 gameTimerInterval = setTimeout(handleGameTick, 1000);
+            } else {
+                gameTimerInterval = null; // Limpiar el timer si el juego ha terminado
             }
+
+            isTickInProgress = false; // <-- AÑADIR ESTA LÍNEA (Quitar el bloqueo)
             // Si el estado cambió a 'finished' (por calculateResults o nextRound),
             // gameTimerInterval seguirá siendo null, y el bucle se detiene.
         }
-
+ 
         async function calculateResults() {
             const state = localGameState;
             const players = { ...state.players };
