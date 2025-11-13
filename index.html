@@ -185,7 +185,6 @@
         // SE HA ELIMINADO LA INICIALIZACIÓN DE AUTH
         const db = getDatabase(app);
 
-        // --- INICIO: CORRECCIÓN DE ERROR ---
         // --- DECLARACIÓN DE ELEMENTOS DOM ---
         const playerNameInput = document.getElementById('player-name');
         const gameIdInput = document.getElementById('game-id-input');
@@ -220,7 +219,6 @@
 
         // Screen elements
         const screens = document.querySelectorAll('.screen');
-        // --- FIN: CORRECCIÓN DE ERROR ---
 
 
         // --- MANEJO DE ID DE USUARIO LOCAL ---
@@ -245,7 +243,6 @@
         const RESULTS_TIME = 5; // segundos
  
         // --- Helper function to show screens ---
-        // (Movida aquí para estar disponible antes de updateUI)
         function showScreen(screenId) {
             // Ocultar todas las pantallas
             screens.forEach(screen => {
@@ -253,13 +250,13 @@
             });
             
             // Mostrar la pantalla activa
-            const activeScreen = document.getElementById(`${screenId}-screen`); // Añadido '-screen'
+            const activeScreen = document.getElementById(`${screenId}-screen`);
             if (activeScreen) {
                 activeScreen.classList.add('active', 'fade-in');
             }
 
             // Lógica para mostrar/ocultar la lista de jugadores
-            if (screenId === 'game' || screenId === 'results') {
+            if (screenId === 'game' || screenId === 'results' || screenId === 'gameOver') { // Añadido gameOver
                 playerListContainer.style.display = 'block';
             } else {
                 playerListContainer.style.display = 'none';
@@ -344,7 +341,6 @@
                 const state = snapshot.val();
                 if (!state) {
                     // El juego fue borrado (quizás el host se fue)
-                    // Se elimina alert() y se usa un método más limpio
                     console.log("La partida ha terminado o fue borrada.");
                     showScreen('join'); // Vuelve a la pantalla de inicio
                     // Resetea el estado local
@@ -352,7 +348,6 @@
                     isHost = false;
                     localGameState = null;
                     if(gameTimerInterval) {
-                        // CORRECCIÓN: Era clearInterval, debe ser clearTimeout
                         clearTimeout(gameTimerInterval);
                         gameTimerInterval = null;
                     }
@@ -383,7 +378,7 @@
                 showScreen('lobby');
                 gameIdDisplay.textContent = currentGameId;
                 lobbyPlayerList.innerHTML = playerArray.map(p => `<li class="p-2">${p.name}</li>`).join('');
-                lobbyPlayerCount.textContent = playerArray.length; // NUEVO
+                lobbyPlayerCount.textContent = playerArray.length;
                 startButton.style.display = (isHost && playerArray.length > 0) ? 'block' : 'none';
             
             } else if (state.status === 'playing') {
@@ -391,8 +386,8 @@
                     showScreen('results');
                     correctAnswer.textContent = state.currentPhrase.type;
                     nextRoundTimer.textContent = state.timer;
-                    resultsSurvivors.textContent = activePlayers.length; // NUEVO
-                    resultsEliminated.textContent = eliminatedPlayers.length; // NUEVO
+                    resultsSurvivors.textContent = activePlayers.length;
+                    resultsEliminated.textContent = eliminatedPlayers.length;
                     
                     const eliminatedThisRound = playerArray.filter(p => p.justEliminated);
                     if (eliminatedThisRound.length > 0) {
@@ -404,7 +399,7 @@
                 } else {
                     showScreen('game');
                     roundNumber.textContent = state.currentRound;
-                    gameSurvivors.textContent = activePlayers.length; // NUEVO
+                    gameSurvivors.textContent = activePlayers.length;
                     phraseText.textContent = state.currentPhrase.text;
                     
                     // Barra de tiempo
@@ -499,25 +494,18 @@
 
         function handleHostLogic(state) {
             // Iniciar o detener el temporizador
-            // Cambiado de setInterval a una lógica de setTimeout recursivo
-            if (state.status === 'playing' && !gameTimerInterval && !isTickInProgress) { // MODIFICADO: Añadido !isTickInProgress
-                // No hay un tick programado, y el juego está en marcha.
-                // ¡Iniciemos el bucle!
+            if (state.status === 'playing' && !gameTimerInterval && !isTickInProgress) {
                 console.log("Iniciando bucle de timer");
                 handleGameTick(); 
             } else if (state.status !== 'playing' && gameTimerInterval) {
-                // El juego no está en marcha, pero hay un tick programado.
-                // ¡Cancelémoslo!
                 console.log("Cancelando bucle de timer");
                 clearTimeout(gameTimerInterval);
                 gameTimerInterval = null;
             }
-            // Si el juego está en marcha y ya hay un tick programado, no hacer nada.
-            // El bucle se autogestiona.
         }
 
         async function handleGameTick() {
-            // Comprobación de seguridad: ¿deberíamos seguir corriendo?
+            // Comprobación de seguridad
             if (!isHost || !localGameState || localGameState.status !== 'playing') {
                 console.log("Tick: Deteniendo (no host o juego no en curso)");
                 isTickInProgress = false;
@@ -525,16 +513,13 @@
                 return; // Detener el bucle
             }
 
-            // --- INICIO DEL BLOQUEO ---
-            // Si ya hay un tick procesándose, no ejecutar este.
-            // El 'onValue' de la base de datos puede llamar a esto varias veces.
+            // Bloqueo
             if (isTickInProgress) {
                 console.log("Tick: Omitido (tick anterior en progreso)");
                 return;
             }
-            isTickInProgress = true; // Poner el bloqueo
+            isTickInProgress = true;
             console.log("Tick: Iniciado", localGameState.timer);
-            // --- FIN DEL BLOQUEO ---
 
             // Lógica del tick
             const gameRef = ref(db, `games/${currentGameId}`);
@@ -544,7 +529,6 @@
                 if (localGameState.showResults) {
                     // Estamos en la pantalla de resultados
                     if (newTimer <= 0) {
-                        // Pasar a la siguiente ronda
                         console.log("Tick: Siguiente ronda");
                         await nextRound();
                     } else {
@@ -555,13 +539,18 @@
                     // Estamos en la pantalla de votación
                     const players = localGameState.players || {};
                     const activePlayers = Object.values(players).filter(p => !p.isEliminated);
-                    const allVoted = activePlayers.every(p => p.vote !== null);
+                    
+                    // --- INICIO DE LA CORRECCIÓN ---
+                    // Solo_comprobar 'allVoted' si hay jugadores activos
+                    const allVoted = activePlayers.length > 0 && activePlayers.every(p => p.vote !== null);
+                    // --- FIN DE LA CORRECCIÓN ---
 
                     if (newTimer <= 0 || allVoted) {
                         // Calcular resultados
                         console.log("Tick: Calculando resultados");
                         await calculateResults();
                     } else {
+                        // Actualizando timer (juego)
                         console.log("Tick: Actualizando timer (juego)");
                         await update(gameRef, { timer: newTimer });
                     }
@@ -570,19 +559,16 @@
                 console.error("Error durante el tick:", error);
             }
 
-            // Al final, volvemos a programar el siguiente tick SI es necesario
-            // onValue actualizará localGameState, así que leemos el estado MÁS RECIENTE
-            // de la base de datos (que está en localGameState después del await).
-            
             // Quitar el bloqueo ANTES de programar el siguiente
             isTickInProgress = false; 
 
+            // Programar siguiente tick
             if (localGameState.status === 'playing') {
                 console.log("Tick: Programando siguiente tick");
                 gameTimerInterval = setTimeout(handleGameTick, 1000);
             } else {
                 console.log("Tick: Fin del juego, no más ticks");
-                gameTimerInterval = null; // Limpiar el timer si el juego ha terminado
+                gameTimerInterval = null;
             }
         }
  
@@ -593,12 +579,11 @@
             let eliminatedCount = 0;
             
             const activePlayerIds = Object.keys(players).filter(id => !players[id].isEliminated);
-            // CORRECCIÓN: Los que votan null (se acaba el tiempo) también son eliminados
+            // Los que votan null (se acaba el tiempo) también son eliminados
             const wrongPlayerIds = activePlayerIds.filter(id => players[id].vote !== correctAnswer);
             
-            // Lógica de eliminación: (MODIFICADA)
-            // Se elimina la condición '&& wrongPlayerIds.length < activePlayerIds.length'.
-            // Si te equivocas, estás eliminado. Si todos se equivocan, todos son eliminados.
+            // Lógica de eliminación:
+            // Si te equivocas, estás eliminado.
             if (wrongPlayerIds.length > 0) {
                 eliminatedCount = wrongPlayerIds.length;
                 wrongPlayerIds.forEach(id => {
@@ -616,7 +601,7 @@
 
             const activePlayersLeft = activePlayerIds.length - eliminatedCount;
             let newStatus = 'playing';
-            if (activePlayersLeft <= 1) { // <= 1 (cubre 1 o 0 supervivientes)
+            if (activePlayersLeft <= 1) { // <= 1 (cubre 0 o 1 supervivientes)
                 newStatus = 'finished';
             }
 
@@ -631,21 +616,20 @@
         async function nextRound() {
             const state = localGameState;
             let newRound = state.currentRound + 1;
-            let phrases = state.phrases; // Usar las frases existentes
+            let phrases = state.phrases;
             
             // Si el estado es 'finished' (0 o 1 jugador), termina.
             if (state.status === 'finished') {
-                // Esto es redundante si calculateResults ya lo puso, pero es seguro
                 await update(ref(db, `games/${currentGameId}`), { status: 'finished' });
                 return;
             }
 
             // Si nos quedamos sin frases, pero el juego NO ha terminado...
             if (newRound > phrases.length) {
-                // ¡Baraja de nuevo y empieza un "nuevo ciclo"!
+                // Baraja de nuevo y empieza un "nuevo ciclo"
                 console.log("Re-barajando frases");
-                newRound = 1; // Resetea el contador de ronda (o mantenlo, estético)
-                phrases = [...PHRASE_LIST].sort(() => Math.random() - 0.5); // Baraja la lista maestra
+                newRound = 1;
+                phrases = [...PHRASE_LIST].sort(() => Math.random() - 0.5);
             }
 
             const players = { ...state.players };
@@ -656,7 +640,7 @@
 
             await update(ref(db, `games/${currentGameId}`), {
                 currentRound: newRound,
-                currentPhrase: phrases[newRound - 1], // Usa la lista de frases (potencialmente nueva)
+                currentPhrase: phrases[newRound - 1],
                 phrases: phrases, // Guarda la nueva lista barajada si es el caso
                 timer: ROUND_TIME,
                 showResults: false,
@@ -670,15 +654,13 @@
         realistButton.onclick = () => submitVote('realista');
 
         function submitVote(vote) {
-            if (!currentGameId || !localUserId) return; // Se usa localUserId
-            // Asegurarse de que localGameState y players existan
+            if (!currentGameId || !localUserId) return;
             if (!localGameState || !localGameState.players) return; 
-            const myData = localGameState.players[localUserId]; // Se usa localUserId
+            const myData = localGameState.players[localUserId];
             
-            // Comprobar si myData existe (es un jugador válido)
             if (!myData || myData.isEliminated || myData.vote) return; // No votar si ya votó o está eliminado
 
-            const voteRef = ref(db, `games/${currentGameId}/players/${localUserId}/vote`); // Se usa localUserId
+            const voteRef = ref(db, `games/${currentGameId}/players/${localUserId}/vote`);
             set(voteRef, vote);
         }
  
@@ -692,24 +674,23 @@
             Object.keys(players).forEach(id => {
                 players[id].isEliminated = false;
                 players[id].vote = null;
-                players[id].justEliminated = false; // Limpiar también este flag
+                players[id].justEliminated = false;
             });
 
             await set(ref(db, `games/${currentGameId}`), {
                 status: 'lobby',
-                hostId: localUserId, // Corregido en la versión anterior
+                hostId: localUserId,
                 players: players
             });
         };
 
         // Limpieza al cerrar la pestaña (opcional pero bueno)
         window.addEventListener('beforeunload', () => {
-            if (!currentGameId || !localUserId) return; // Se usa localUserId
+            if (!currentGameId || !localUserId) return;
 
-            const playerRef = ref(db, `games/${currentGameId}/players/${localUserId}`); // Se usa localUserId
+            const playerRef = ref(db, `games/${currentGameId}/players/${localUserId}`);
             
             // Solo quitar al jugador si no es el host.
-            // Si el host se va, el juego se borra.
             if (!isHost) {
                 remove(playerRef); // Quitar al jugador
             }
