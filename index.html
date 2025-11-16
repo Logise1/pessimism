@@ -94,11 +94,10 @@
         import { getDatabase, ref, onValue, set, update, onDisconnect, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
         // --- CONFIGURACIÓN DE FIREBASE (PROPORCIONADA POR EL USUARIO) ---
-        // (Dejamos la configuración que proporcionaste)
         const firebaseConfig = {
             apiKey: "AIzaSyDrYwIMyL2y7yHXxQF4yjtokPOE2QyHC5I",
             authDomain: "pesimism-2fdad.firebaseapp.com",
-            databaseURL: "https://pesimism-2fdad-default-rtdb.europe-west1.firebasedatabase.app",
+            databaseURL: "https://pesimism-2fdad-default-rtdb.europe-west1.firebasedatabase.app", // Corregido el error tipográfico
             projectId: "pesimism-2fdad",
             storageBucket: "pesimism-2fdad.firebasestorage.app",
             messagingSenderId: "859660712236",
@@ -106,39 +105,23 @@
             measurementId: "G-TYE4V0P8XB"
         };
         
-        // --- BANCO DE FRASES REESTRUCTURADO POR DIFICULTAD (25 CADA UNA) ---
+        // --- BANCO DE FRASES REESTRUCTURADO POR DIFICULTAD ---
         // 'r' = Realista, 'p' = Pesimista
 
-        // Súper obvias (25)
+        // Súper obvias
         const PHRASES_EASY = [
             { text: "El sol saldrá mañana, sin importar lo que pase hoy.", answer: 'r' },
             { text: "Todas las personas cometen errores.", answer: 'r' },
             { text: "El pasado no se puede cambiar.", answer: 'r' },
             { text: "Las cosas materiales no duran para siempre.", answer: 'r' },
             { text: "El cuerpo humano envejece y eventualmente falla.", answer: 'r' },
-            { text: "Cualquier cosa que pueda salir mal, saldrá mal.", answer: 'p' },
-            { text: "Las cosas nunca mejorarán.", answer: 'p' },
-            { text: "Nunca serás verdaderamente feliz.", answer: 'p' },
+            { text: "Cualquier cosa que pueda salir mal, saldrá mal.", answer: 'p' }, // Famosa ley pesimista
+            { text: "Las cosas nunca mejorarán.", answer: 'p' }, // Pesimismo obvio
+            { text: "Nunca serás verdaderamente feliz.", answer: 'p' }, // Pesimismo absoluto
             { text: "No importa lo que hagas, al final fracasarás.", answer: 'p' },
-            { text: "El agua hierve a 100°C al nivel del mar.", answer: 'r' },
-            { text: "La gravedad mantiene los planetas en órbita.", answer: 'r' },
-            { text: "Las plantas necesitan luz solar para crecer.", answer: 'r' },
-            { text: "Todos los seres vivos eventualmente mueren.", answer: 'r' },
-            { text: "El ejercicio regular es bueno para la salud.", answer: 'r' },
-            { text: "La noche sigue al día.", answer: 'r' },
-            { text: "No puedes respirar bajo el agua sin ayuda.", answer: 'r' },
-            { text: "Nunca conseguiré el trabajo de mis sueños.", answer: 'p' },
-            { text: "Siempre llueve cuando planeo algo al aire libre.", answer: 'p' },
-            { text: "Seguro que este semáforo se pone en rojo.", answer: 'p' },
-            { text: "La fila en la que estoy siempre es la más lenta.", answer: 'p' },
-            { text: "Se me va a caer la tostada por el lado de la mantequilla.", answer: 'p' },
-            { text: "Nadie entiende realmente mis problemas.", answer: 'p' },
-            { text: "Aprender una nueva habilidad lleva tiempo.", answer: 'r' },
-            { text: "No se puede complacer a todo el mundo.", answer: 'r' },
-            { text: "Si algo puede romperse, se romperá.", answer: 'p' }
         ];
 
-        // Requieren pensar un poco (25)
+        // Requieren pensar un poco
         const PHRASES_MEDIUM = [
             { text: "Confiar ciegamente en desconocidos te hace vulnerable.", answer: 'r' },
             { text: "Nadie consigue todo lo que quiere en la vida.", answer: 'r' },
@@ -152,82 +135,30 @@
             { text: "Es mejor no esperar nada para nunca sentirse decepcionado.", answer: 'p' },
             { text: "Si algo parece demasiado bueno para ser verdad, seguro es mentira.", answer: 'p' },
             { text: "La gente solo te ayuda si puede obtener algo a cambio.", answer: 'p' },
-            { text: "La mayoría de las nuevas empresas fracasan en los primeros 5 años.", answer: 'r' },
-            { text: "El éxito financiero a menudo requiere un grado de suerte.", answer: 'r' },
-            { text: "Las relaciones a larga distancia tienen una tasa de fracaso más alta.", answer: 'r' },
-            { text: "Es imposible saber con certeza lo que piensan los demás.", answer: 'r' },
-            { text: "Cualquier sistema complejo tiene puntos de fallo.", answer: 'r' },
-            { text: "La gente tiende a recordar más las experiencias negativas que las positivas.", answer: 'r' },
-            { text: "Tus amigos te abandonarán cuando más los necesites.", answer: 'p' },
-            { text: "Cualquier plan detallado está condenado al fracaso por un detalle imprevisto.", answer: 'p' },
-            { text: "Si das tu opinión honesta, la gente te odiará por ello.", answer: 'p' },
-            { text: "El esfuerzo extra nunca es reconocido ni recompensado.", answer: 'p' },
-            { text: "La tecnología solo sirve para complicar más las cosas.", answer: 'p' },
-            { text: "Toda la comida que sabe bien es mala para la salud.", answer: 'p' },
-            { text: "Las promesas están hechas para romperse.", answer: 'p' }
         ];
 
-        // Difíciles (Sutiles, filosóficas) (25)
+        // Difíciles (Sutiles, filosóficas, pero no ambiguas)
         const PHRASES_HARD = [
-            { text: "La felicidad es un estado químico temporal en el cerebro.", answer: 'r' },
-            { text: "La historia humana está definida por el conflicto, no por la paz.", answer: 'r' },
-            { text: "No puedes controlar las acciones o sentimientos de otras personas.", answer: 'r' },
-            { text: "Incluso las decisiones mejor informadas pueden tener resultados negativos.", answer: 'r' },
-            { text: "Un pequeño porcentaje de la población controla la mayoría de los recursos globales.", answer: 'r' },
-            { text: "La memoria humana es inherentemente poco fiable.", answer: 'r' },
-            { text: "La gente siempre actuará en su propio interés, incluso a costa tuya.", answer: 'p' },
-            { text: "Todo esfuerzo es, en última instancia, inútil frente a la inmensidad del tiempo.", answer: 'p' },
-            { text: "Al final, estás fundamentalmente solo.", answer: 'p' },
-            { text: "Cualquier acto de bondad esconde un motivo egoísta.", answer: 'p' },
-            { text: "El mundo es injusto por naturaleza y siempre lo será.", answer: 'p' },
-            { text: "Tus logros serán olvidados.", answer: 'p' },
-            { text: "El 'libre albedrío' puede ser una ilusión determinada por la neuroquímica.", answer: 'r' },
-            { text: "La mayoría de las especies que han existido en la Tierra están extintas.", answer: 'r' },
-            { text: "Tu percepción de la realidad es una simulación creada por tu cerebro.", answer: 'r' },
-            { text: "Existen sesgos cognitivos que distorsionan tu juicio sin que te des cuenta.", answer: 'r' },
-            { text: "El altruismo biológico puede explicarse como una estrategia de 'gen egoísta'.", answer: 'r' },
-            { text: "No hay un 'propósito' cósmico inherente a la existencia humana.", answer: 'r' },
-            { text: "La justicia es un concepto humano; el universo es indiferente.", answer: 'r' },
-            { text: "Toda relación humana es fundamentalmente transaccional.", answer: 'p' },
-            { text: "La historia humana es una repetición interminable de los mismos errores.", answer: 'p' },
-            { text: "La paz es solo el intervalo entre dos guerras.", answer: 'p' },
-            { text: "El progreso es una ilusión; la humanidad no mejora, solo cambia sus vicios.", answer: 'p' },
-            { text: "El amor verdadero no existe, es solo una idealización de la dependencia.", answer: 'p' },
-            { text: "Cualquier intento de cambiar el sistema solo lo reforzará.", answer: 'p' }
+            { text: "La felicidad es un estado químico temporal en el cerebro.", answer: 'r' }, // Hecho científico que se siente pesimista
+            { text: "La historia humana está definida por el conflicto, no por la paz.", answer: 'r' }, // Hecho histórico observable
+            { text: "No puedes controlar las acciones o sentimientos de otras personas.", answer: 'r' }, // Verdad fundamental
+            { text: "Incluso las decisiones mejor informadas pueden tener resultados negativos.", answer: 'r' }, // Realismo estadístico
+            { text: "Un pequeño porcentaje de la población controla la mayoría de los recursos globales.", answer: 'r' }, // Hecho estadístico
+            { text: "La memoria humana es inherentemente poco fiable.", answer: 'r' }, // Hecho psicológico
+            { text: "La gente siempre actuará en su propio interés, incluso a costa tuya.", answer: 'p' }, // Generalización negativa absoluta
+            { text: "Todo esfuerzo es, en última instancia, inútil frente a la inmensidad del tiempo.", answer: 'p' }, // Pesimismo filosófico
+            { text: "Al final, estás fundamentalmente solo.", answer: 'p' }, // Pesimismo existencial
+            { text: "Cualquier acto de bondad esconde un motivo egoísta.", answer: 'p' }, // Cinismo absoluto
+            { text: "El mundo es injusto por naturaleza y siempre lo será.", answer: 'p' }, // Declaración fatalista
+            { text: "Tus logros serán olvidados.", answer: 'p' }, // Proyección negativa
         ];
-
-        // NUEVA CATEGORÍA: Insane (25)
-        const PHRASES_INSANE = [
-            { text: "El universo terminará eventualmente en la muerte térmica, haciendo que todo sea irrelevante.", answer: 'r' },
-            { text: "Estadísticamente, es casi seguro que tus logros serán completamente olvidados en 1000 años.", answer: 'r' },
-            { text: "Tus células se reemplazan constantemente; 'tú' no eres la misma persona que eras hace 7 años.", answer: 'r' },
-            { text: "No hay evidencia objetiva de que la conciencia sea algo más que un subproducto biológico.", answer: 'r' },
-            { text: "La cantidad de sufrimiento en el mundo supera con creces a la cantidad de felicidad.", answer: 'p' },
-            { text: "Eres fundamentalmente un esclavo de tu propia biología y tus instintos.", answer: 'p' },
-            { text: "Toda interacción social es una mentira performativa.", answer: 'p' },
-            { text: "La entropía asegura que todo sistema, incluyéndote a ti y a tus obras, decaerá inevitablemente al caos.", answer: 'r' },
-            { text: "Eres un conjunto de datos en un algoritmo que no puedes controlar.", answer: 'p' },
-            { text: "La única verdad es el dolor; todo lo demás es una distracción temporal.", answer: 'p' },
-            { text: "Tus recuerdos más preciados son probablemente falsos o están distorsionados.", answer: 'r' },
-            { text: "El sistema económico global requiere la explotación de una subclase para funcionar.", answer: 'r' },
-            { text: "La 'individualidad' es una construcción social; solo eres un producto de tu entorno.", answer: 'p' },
-            { text: "Cualquier felicidad que sientas es solo la ausencia temporal de dolor.", answer: 'p' },
-            { text: "Eres inherentemente egoísta; cualquier acto de 'bondad' es para sentirte mejor contigo mismo.", answer: 'p' },
-            { text: "El genoma humano contiene innumerables 'errores' y ADN viral.", answer: 'r' },
-            { text: "Millones de personas han vivido y muerto en el anonimato total. Tú serás uno de ellos.", answer: 'p' },
-            { text: "El lenguaje es inherentemente incapaz de transmitir una experiencia verdadera.", answer: 'r' },
-            { text: "No existe tal cosa como una decisión 'correcta'; solo hay consecuencias.", answer: 'r' },
-            { text: "El universo no te debe nada, ni siquiera una explicación.", answer: 'r' },
-            { text: "Nunca podrás escapar de tus propios sesgos.", answer: 'p' },
-            { text: "Toda belleza es solo un indicador de aptitud reproductiva.", answer: 'r' },
-            { text: "El 'yo' es una narrativa que el cerebro se cuenta a sí mismo.", answer: 'r' },
-            { text: "Nada de lo que hagas importará.", answer: 'p' },
-            { text: "El destino de la humanidad es autodestruirse.", answer: 'p' }
-        ];
-
         
+        // Se elimina la constante 'PHRASES' única
+
+
         // --- VARIABLES GLOBALES ---
         const app = initializeApp(firebaseConfig);
+        // Se elimina la const 'auth'
         const db = getDatabase(app);
         
         let localUserId = null; // Reemplaza a userId de auth
@@ -240,7 +171,11 @@
 
         // --- FUNCIÓN PRINCIPAL ---
         function main() {
-            localUserId = crypto.randomUUID(); // Genera un ID local único
+            // Ya no usamos onAuthStateChanged
+            // Intentar recuperar un ID local, o crear uno nuevo
+            localUserId = localStorage.getItem('laPruebaUserId') || crypto.randomUUID();
+            localStorage.setItem('laPruebaUserId', localUserId); 
+
             console.log("Sesión local iniciada con ID:", localUserId);
             renderInitialScreen();
         }
@@ -305,37 +240,28 @@
             const votes = survivors.filter(p => p.vote).length;
             const votePercentage = survivors.length > 0 ? (votes / survivors.length) * 100 : 0;
             const isSuddenDeath = gameState.specialEvent === 'sudden_death';
-            const roundNumber = gameState.currentRound + 1;
-
-            // Determinar dificultad para mostrar
-            let difficultyLabel = "FÁCIL";
-            if (roundNumber > 75) difficultyLabel = "!!! INSANE !!!";
-            else if (roundNumber > 50) difficultyLabel = "DIFÍCIL";
-            else if (roundNumber > 25) difficultyLabel = "MEDIO";
-            
-            let difficultyColor = "text-green-500";
-            if (roundNumber > 75) difficultyColor = "text-purple-400 animate-pulse";
-            else if (roundNumber > 50) difficultyColor = "text-red-500";
-            else if (roundNumber > 25) difficultyColor = "text-yellow-500";
-
 
             // --- INICIO DE RENDERIZADO INTELIGENTE ---
+            // Si ya estamos en esta vista, solo actualiza los datos dinámicos
             const voteCounter = document.getElementById('vote-counter');
-            if (voteCounter && document.getElementById('phrase-text')?.textContent === `"${escapeHTML(phrase.text)}"`) {
+            const phraseTextElement = document.getElementById('phrase-text');
+
+            // Comprobar si la frase es la misma para evitar re-renderizado
+            if (voteCounter && phraseTextElement && phraseTextElement.dataset.text === phrase.text) {
                 voteCounter.textContent = `Votos recibidos: ${votes} / ${survivors.length}`;
                 document.getElementById('vote-progress-bar').style.width = `${votePercentage}%`;
-                return; 
+                return; // No re-renderizar todo, evita que la animación "fade-in" se repita
             }
             // --- FIN DE RENDERIZADO INTELIGENTE ---
 
+            // Renderizado completo si es una nueva ronda
             appElement.innerHTML = `
                 <div class="text-center fade-in max-w-3xl mx-auto">
-                    <p class="text-gray-500 text-lg mb-2">Ronda ${roundNumber} / 100</p>
-                    <p class="text-lg font-bold mb-4 ${difficultyColor}">[ ${difficultyLabel} ]</p>
+                    <p class="text-gray-500 text-lg mb-4">Ronda ${gameState.currentRound + 1}</p>
                     
                     ${isSuddenDeath ? `<h2 class="text-5xl font-bold text-red-700 mb-6 animate-pulse">¡MUERTE SÚBITA!</h2>` : ''}
 
-                    <h1 id="phrase-text" class="text-4xl font-bold text-white mb-12 leading-relaxed">
+                    <h1 id="phrase-text" data-text="${escapeHTML(phrase.text)}" class="text-4xl font-bold text-white mb-12 leading-relaxed">
                         "${escapeHTML(phrase.text)}"
                     </h1>
 
@@ -410,7 +336,7 @@
 
         // 3. Vistas del JUGADOR
         function renderPlayerLobby(players) {
-            const myName = players[localUserId]?.name || "Invitado"; // Usa localUserId
+            const myName = players[localUserId]?.name || localStorage.getItem('laPruebaPlayerName') || "Invitado"; // Usa localUserId
             appElement.innerHTML = `
                 <div class="text-center fade-in max-w-md mx-auto">
                     <h1 class="text-3xl font-bold text-white mb-4">SALA DE ESPERA</h1>
@@ -419,7 +345,7 @@
                     <div class="mt-8">
                         <h3 class="text-lg text-gray-500 mb-3">Otros jugadores:</h3>
                         <div class="space-y-2 max-h-40 overflow-y-auto">
-                            ${Object.values(players).filter(p => p.id !== localUserId).map(p => 
+                            ${Object.values(players).filter(p => p.id !== localUserId).map(p => // Usa localUserId
                                 `<div class="player-list-item">${escapeHTML(p.name)}</div>`
                             ).join('')}
                         </div>
@@ -430,23 +356,9 @@
 
         function renderPlayerVote(phrase) {
             const isSuddenDeath = gameState.specialEvent === 'sudden_death';
-            const roundNumber = gameState.currentRound + 1;
-            
-            // Determinar dificultad para mostrar
-            let difficultyLabel = "FÁCIL";
-            if (roundNumber > 75) difficultyLabel = "!!! INSANE !!!";
-            else if (roundNumber > 50) difficultyLabel = "DIFÍCIL";
-            else if (roundNumber > 25) difficultyLabel = "MEDIO";
-            
-            let difficultyColor = "text-green-500";
-            if (roundNumber > 75) difficultyColor = "text-purple-400 animate-pulse";
-            else if (roundNumber > 50) difficultyColor = "text-red-500";
-            else if (roundNumber > 25) difficultyColor = "text-yellow-500";
-
             appElement.innerHTML = `
                 <div class="text-center fade-in max-w-2xl mx-auto">
-                    <p class="text-gray-500 text-lg mb-2">Ronda ${roundNumber} / 100</p>
-                    <p class="text-lg font-bold mb-4 ${difficultyColor}">[ ${difficultyLabel} ]</p>
+                    <p class="text-gray-500 text-lg mb-4">Ronda ${gameState.currentRound + 1}</p>
                     
                     ${isSuddenDeath ? `<h2 class="text-4xl font-bold text-red-700 mb-6 animate-pulse">¡MUERTE SÚBITA!</h2>` : ''}
 
@@ -527,46 +439,52 @@
             isHost = true;
             console.log("Intentando unirse como Host");
             
+            // Comprobar si ya hay un host
             onValue(hostIdRef, (snapshot) => {
                 const currentHostId = snapshot.val();
+                // Si hay un host Y ese host NO soy yo, no puedo ser host
                 if (currentHostId && currentHostId !== localUserId) {
-                    // Reemplazamos alert() por una vista de error temporal
-                    appElement.innerHTML = `
-                        <div class="text-center fade-in">
-                            <h1 class="text-3xl font-bold text-red-500 mb-6">ERROR</h1>
-                            <p class="text-gray-300">Ya hay un presentador en esta sala. Únete como jugador.</p>
-                        </div>
-                    `;
-                    setTimeout(renderInitialScreen, 3000); // Volver al inicio
+                    // Usar un modal custom en lugar de alert
+                    renderInitialScreen(); // Volver a la pantalla inicial
+                    // Inyectar un mensaje de error
+                    const title = document.querySelector("#app h1");
+                    if(title) {
+                        const errorMsg = document.createElement('p');
+                        errorMsg.className = 'text-red-500 text-lg mb-4';
+                        errorMsg.textContent = '¡Error! Ya hay un presentador en esta sala. Únete como jugador.';
+                        title.parentNode.insertBefore(errorMsg, title.nextSibling);
+                    }
                     isHost = false;
                 } else {
+                    // No hay host, o el host soy yo (refresqué la página)
+                    // Tomar control como host
                     set(hostIdRef, localUserId); 
-                    onDisconnect(hostIdRef).remove(); 
+                    onDisconnect(hostIdRef).remove(); // Si me voy, dejo el puesto libre
                     
+                    // No reiniciamos el juego, solo nos conectamos a él
                     setupHostListener();
                 }
-            }, { onlyOnce: true }); 
+            }, { onlyOnce: true }); // Solo comprobar una vez
         }
 
         // Inicializa o resetea el juego
         function initGame() {
-            console.log("INICIALIZANDO JUEGO NUEVO CON DIFICULTAD PROGRESIVA (100 FRASES)");
+            console.log("INICIALIZANDO JUEGO NUEVO CON DIFICULTAD PROGRESIVA");
             
             // 1. Barajar cada categoría de dificultad por separado
             const shuffledEasy = [...PHRASES_EASY].sort(() => Math.random() - 0.5);
             const shuffledMedium = [...PHRASES_MEDIUM].sort(() => Math.random() - 0.5);
             const shuffledHard = [...PHRASES_HARD].sort(() => Math.random() - 0.5);
-            const shuffledInsane = [...PHRASES_INSANE].sort(() => Math.random() - 0.5); // Barajar la nueva categoría
 
             // 2. Concatenarlas en orden de dificultad
-            const finalShuffledList = [...shuffledEasy, ...shuffledMedium, ...shuffledHard, ...shuffledInsane];
+            const finalShuffledList = [...shuffledEasy, ...shuffledMedium, ...shuffledHard];
 
             set(gameRef, {
                 state: 'lobby',
                 players: {},
                 currentRound: -1,
                 currentPhrase: null,
-                // Almacena la lista de 100 frases barajadas por categoría
+                // Reemplaza 'shuffledPhraseIndices' con la lista de frases completa
                 shuffledPhrases: finalShuffledList, 
                 specialEvent: null,
                 winner: null
@@ -580,11 +498,14 @@
             const newPhrase = gameState.shuffledPhrases[currentRound];
 
             if (typeof newPhrase === 'undefined') {
-                // Se acabaron las 100 frases
+                // Se acabaron las frases
                 triggerGameOver();
                 return;
             }
 
+            // const newPhrase = PHRASES[phraseIndex]; // Línea eliminada
+            
+            // Resetear votos de jugadores no eliminados
             const players = gameState.players || {};
             const updates = {};
             Object.keys(players).forEach(pid => {
@@ -596,8 +517,7 @@
             
             // Decidir si hay un evento especial
             let eventType = null;
-            // Reducimos la probabilidad para que no sea tan frecuente en 100 rondas
-            if (Math.random() < 0.20) { // 20% de probabilidad
+            if (Math.random() < 0.25) { // 25% de probabilidad
                 eventType = 'sudden_death';
             }
             updates['/specialEvent'] = eventType;
@@ -627,7 +547,7 @@
                             updates[`/players/${pid}/lives`] = 0;
                             updates[`/players/${pid}/isEliminated`] = true;
                         } else {
-                            const newLives = (player.lives ?? 2) - 1; 
+                            const newLives = (player.lives ?? 2) - 1; // Default a 2 vidas si no existe
                             updates[`/players/${pid}/lives`] = newLives;
                             if (newLives <= 0) {
                                 updates[`/players/${pid}/isEliminated`] = true;
@@ -658,14 +578,21 @@
 
         function joinAsPlayer() {
             isHost = false;
-            const name = prompt("Introduce tu nombre (corto):", "Jugador");
+            // Intentar recuperar el nombre, o pedirlo
+            let name = localStorage.getItem('laPruebaPlayerName');
+            if (!name) {
+                name = prompt("Introduce tu nombre (corto):", "Jugador");
+            }
             if (!name) return; // Canceló
 
+            // Guardar nombre para reconexiones
+            localStorage.setItem('laPruebaPlayerName', name); 
+
             console.log(`Uniéndose como Jugador: ${name}`);
-            const playerRef = ref(db, `la-prueba/game/players/${localUserId}`);
+            const playerRef = ref(db, `la-prueba/game/players/${localUserId}`); // Usa localUserId
             
             set(playerRef, {
-                id: localUserId,
+                id: localUserId, // Usa localUserId
                 name: name,
                 lives: 2, // Empezar con 2 vidas
                 isEliminated: false,
@@ -673,13 +600,15 @@
                 isCorrect: null
             });
             
+            // Si el jugador cierra la pestaña, se elimina
             onDisconnect(playerRef).remove();
             
             setupPlayerListener();
         }
 
         function handleVote(vote) {
-            update(ref(db, `la-prueba/game/players/${localUserId}`), { 
+            // 'p' o 'r'
+            update(ref(db, `la-prueba/game/players/${localUserId}`), { // Usa localUserId
                 vote: vote
             });
             renderPlayerWait("Voto registrado.");
@@ -688,22 +617,39 @@
 
         // --- LISTENERS (SINCRONIZACIÓN) ---
 
+        // ==========================================================
+        //         ¡¡¡INICIO DE LA CORRECCIÓN DE LÓGICA!!!
+        // ==========================================================
+
+        // ESTA ES LA FUNCIÓN DEL HOST (CORREGIDA)
         function setupHostListener() {
             onValue(gameRef, (snapshot) => {
                 if (!snapshot.exists()) {
-                    initGame(); 
+                    initGame(); // Si alguien borra la base, el host la recrea
                     return;
                 }
                 gameState = snapshot.val();
                 
                 // Si el juego existe pero no tiene la lista de frases (juego antiguo), reinícialo
-                if (!gameState.shuffledPhrases || gameState.shuffledPhrases.length < 100) {
+                if (!gameState.shuffledPhrases) {
                     initGame();
                     return;
                 }
 
                 const { state, players = {}, currentPhrase, winner } = gameState;
 
+                // --- ¡AQUÍ ESTÁ LA LÓGICA CLAVE DEL HOST! ---
+                // Si un host se conecta y el juego ya está en "gameover" (de una
+                // partida anterior), su primer trabajo es reiniciar y crear un nuevo lobby.
+                if (state === 'gameover') {
+                    // Esto pondrá el estado en 'lobby' y disparará este listener
+                    // de nuevo, que luego renderizará el lobby correctamente.
+                    console.log("Detectado estado 'gameover' al unirse como host. Reiniciando juego.");
+                    initGame();
+                    return; // No procesar el estado 'gameover'
+                }
+
+                // Esta es la lógica de renderizado del HOST (reemplaza la de jugador)
                 switch (state) {
                     case 'lobby':
                         renderHostLobby(players);
@@ -712,47 +658,89 @@
                         renderHostRound(currentPhrase, players);
                         break;
                     case 'reveal':
-                        renderHostReveal(currentPhrase, players, currentPhrase.answer);
+                        // Asegurarse de que currentPhrase exista
+                        if(currentPhrase) {
+                            renderHostReveal(currentPhrase, players, currentPhrase.answer);
+                        } else {
+                            // Si algo falla, volver al lobby
+                            renderHostLobby(players);
+                        }
                         break;
-                    case 'gameover':
-                        renderHostGameOver(winner);
-                        break;
+                    // El caso 'gameover' es manejado por el IF de arriba
                     default:
-                        console.log("Estado desconocido, reiniciando a lobby");
-                        initGame();
+                        renderHostLobby(players);
                 }
             });
         }
 
+        // ESTA ES LA FUNCIÓN DEL JUGADOR (AÑADIDA)
         function setupPlayerListener() {
             onValue(gameRef, (snapshot) => {
                 if (!snapshot.exists()) {
-                    appElement.innerHTML = `<h1 class="text-red-500 text-center">La sala ha sido cerrada por el presentador.</h1>`;
-                    setTimeout(renderInitialScreen, 3000);
+                    renderPlayerWait("Esperando a que el presentador inicie la sala...");
                     return;
                 }
-                
                 gameState = snapshot.val();
-                const { state, players = {}, currentPhrase, winner } = gameState;
-                const myData = players[localUserId]; 
-
-                if (!myData && state !== 'lobby') { // Si no estoy en la lista Y el juego ya empezó
-                    console.log("Datos no encontrados, volviendo al inicio");
-                    renderInitialScreen();
-                    return;
-                }
                 
-                // Manejo especial si me uno tarde (o si el host resetea)
-                if (state === 'lobby' && !myData) {
-                    joinAsPlayer(); // Intentar unirse de nuevo
+                // Si el juego no tiene frases (aún no se ha inicializado), espera.
+                if (!gameState.shuffledPhrases) {
+                    renderPlayerWait("Conectando...");
                     return;
                 }
 
-                if (myData && myData.isEliminated && state !== 'gameover') {
-                    renderPlayerEliminated();
+                const { state, players = {}, currentPhrase, winner } = gameState;
+                const myData = players[localUserId];
+
+                // --- ¡AQUÍ ESTÁ LA LÓGICA CLAVE DEL JUGADOR! ---
+                // Si el jugador se une y ve 'gameover', NO debe mostrar la pantalla
+                // de fin de partida. Debe mostrar el lobby y esperar el reinicio.
+                if (state === 'gameover') {
+                    console.log("Detectado estado 'gameover' al unirse como jugador. Mostrando lobby.");
+                    renderPlayerLobby(players); // Muestra el lobby, no la pantalla de gameover
                     return;
                 }
 
+                // Si mis datos no existen (p.ej. el host reinició el juego)
+                if (!myData) {
+                    // Si el juego está en el lobby (lo normal tras un reinicio),
+                    // me vuelvo a unir automáticamente.
+                    if (state === 'lobby') {
+                        console.log("Juego reiniciado. Volviendo a unirse...");
+                        const name = localStorage.getItem('laPruebaPlayerName');
+                        if (name) {
+                            const playerRef = ref(db, `la-prueba/game/players/${localUserId}`);
+                            set(playerRef, {
+                                id: localUserId,
+                                name: name,
+                                lives: 2,
+                                isEliminated: false,
+                                vote: null,
+                                isCorrect: null
+                            });
+                            onDisconnect(playerRef).remove();
+                        } else {
+                            // Si no hay nombre guardado, volver al inicio
+                            renderInitialScreen();
+                        }
+                    } else {
+                        // Estado raro: no estoy y no es lobby. Mejor volver al inicio.
+                         renderInitialScreen();
+                    }
+                    return; // El listener se disparará de nuevo cuando me una
+                }
+
+                // Si estoy eliminado, muestro la pantalla de eliminado
+                if (myData.isEliminated) {
+                    // A menos que el juego haya vuelto al lobby
+                    if (state === 'lobby') {
+                        renderPlayerLobby(players);
+                    } else {
+                        renderPlayerEliminated();
+                    }
+                    return;
+                }
+
+                // Lógica de renderizado del JUGADOR (no eliminado)
                 switch (state) {
                     case 'lobby':
                         renderPlayerLobby(players);
@@ -767,16 +755,12 @@
                     case 'reveal':
                         renderPlayerResult(myData.isCorrect, myData.lives);
                         break;
-                    case 'gameover':
-                        renderPlayerGameOver(winner);
-                        break;
+                    // 'gameover' ya fue manejado por el IF de arriba
                     default:
                         renderPlayerLobby(players);
                 }
             });
         }
-
-        // Iniciar la aplicación
         main();
 
     </script>
