@@ -138,20 +138,63 @@
         ];
 
         // Difíciles (Sutiles, filosóficas, pero no ambiguas)
-        const PHRASES_HARD = [
-            { text: "La felicidad es un estado químico temporal en el cerebro.", answer: 'r' }, // Hecho científico que se siente pesimista
-            { text: "La historia humana está definida por el conflicto, no por la paz.", answer: 'r' }, // Hecho histórico observable
-            { text: "No puedes controlar las acciones o sentimientos de otras personas.", answer: 'r' }, // Verdad fundamental
-            { text: "Incluso las decisiones mejor informadas pueden tener resultados negativos.", answer: 'r' }, // Realismo estadístico
-            { text: "Un pequeño porcentaje de la población controla la mayoría de los recursos globales.", answer: 'r' }, // Hecho estadístico
-            { text: "La memoria humana es inherentemente poco fiable.", answer: 'r' }, // Hecho psicológico
-            { text: "La gente siempre actuará en su propio interés, incluso a costa tuya.", answer: 'p' }, // Generalización negativa absoluta
-            { text: "Todo esfuerzo es, en última instancia, inútil frente a la inmensidad del tiempo.", answer: 'p' }, // Pesimismo filosófico
-            { text: "Al final, estás fundamentalmente solo.", answer: 'p' }, // Pesimismo existencial
-            { text: "Cualquier acto de bondad esconde un motivo egoísta.", answer: 'p' }, // Cinismo absoluto
-            { text: "El mundo es injusto por naturaleza y siempre lo será.", answer: 'p' }, // Declaración fatalista
-            { text: "Tus logros serán olvidados.", answer: 'p' }, // Proyección negativa
-        ];
+const PHRASES_HARD = [
+    { text: "La felicidad es un estado químico temporal en el cerebro.", answer: 'r' },
+    { text: "La historia humana está definida por el conflicto, no por la paz.", answer: 'r' },
+    { text: "No puedes controlar las acciones o sentimientos de otras personas.", answer: 'r' },
+    { text: "Incluso las decisiones mejor informadas pueden tener resultados negativos.", answer: 'r' },
+    { text: "Un pequeño porcentaje de la población controla la mayoría de los recursos globales.", answer: 'r' },
+    { text: "La memoria humana es inherentemente poco fiable.", answer: 'r' },
+    { text: "La gente siempre actuará en su propio interés, incluso a costa tuya.", answer: 'p' },
+    { text: "Todo esfuerzo es, en última instancia, inútil frente a la inmensidad del tiempo.", answer: 'p' },
+    { text: "Al final, estás fundamentalmente solo.", answer: 'p' },
+    { text: "Cualquier acto de bondad esconde un motivo egoísta.", answer: 'p' },
+    { text: "El mundo es injusto por naturaleza y siempre lo será.", answer: 'p' },
+    { text: "Tus logros serán olvidados.", answer: 'p' },
+    { text: "El progreso tecnológico no garantiza el progreso moral de la humanidad.", answer: 'r' },
+    { text: "La mayoría de las personas no cambian sus creencias, incluso ante evidencia abrumadora.", answer: 'r' },
+    { text: "Los sistemas políticos están diseñados para perpetuar el poder de unos pocos.", answer: 'r' },
+    { text: "La inteligencia no protege contra la toma de decisiones irracionales.", answer: 'r' },
+    { text: "La empatía tiene límites biológicos que no podemos superar.", answer: 'r' },
+    { text: "La vida no tiene un propósito inherente, solo el que tú le asignas.", answer: 'r' },
+    { text: "La cooperación humana a gran escala es una excepción, no la regla.", answer: 'r' },
+    { text: "Nada que hagas importará en 1000 años.", answer: 'p' },
+    { text: "Todas las relaciones humanas están condenadas a terminar en traición o abandono.", answer: 'p' },
+    { text: "El sufrimiento es el único estado permanente de la existencia.", answer: 'p' },
+    { text: "La esperanza es solo un mecanismo de defensa contra la realidad.", answer: 'p' },
+    { text: "La humanidad está condenada a repetir los mismos errores eternamente.", answer: 'p' },
+    { text: "No hay justicia en el universo, solo caos y azar.", answer: 'p' },
+    { text: "El amor es una ilusión bioquímica sin significado real.", answer: 'p' },
+    { text: "La libertad individual es una fantasía en una sociedad interconectada.", answer: 'r' },
+    { text: "La mayoría de las innovaciones humanas surgen de la guerra o la escasez.", answer: 'r' },
+    { text: "La percepción de la realidad está siempre distorsionada por sesgos cognitivos.", answer: 'r' },
+    { text: "La ética es subjetiva y varía según el contexto cultural e histórico.", answer: 'r' },
+    { text: "La felicidad sostenida es biológicamente imposible para los humanos.", answer: 'r' },
+    { text: "El altruismo puro no existe, siempre hay un beneficio oculto.", answer: 'p' },
+    { text: "La existencia es un ciclo interminable de dolor y aburrimiento.", answer: 'p' },
+    { text: "La muerte hace que toda lucha sea absurda.", answer: 'p' },
+    { text: "La comunicación humana está condenada al malentendido.", answer: 'p' },
+    { text: "La sociedad premia la mediocridad y castiga la excelencia.", answer: 'p' },
+    { text: "La conciencia es una maldición evolutiva sin propósito claro.", answer: 'p' },
+    { text: "Los sistemas económicos están diseñados para explotar a la mayoría.", answer: 'r' },
+    { text: "La mayoría de las personas prefieren la comodidad de la ignorancia a la incomodidad de la verdad.", answer: 'r' },
+    { text: "La creatividad humana está limitada por las estructuras cerebrales preexistentes.", answer: 'r' },
+    { text: "La moralidad es un constructo social sin base en la naturaleza.", answer: 'r' },
+    { text: "El tiempo borrará toda huella de tu existencia como si nunca hubieras existido.", answer: 'p' },
+    { text: "Todas las ideologías son igualmente arbitrarias y defectuosas.", answer: 'p' },
+    { text: "La búsqueda de significado es un intento fútil de negar el vacío existencial.", answer: 'p' },
+    { text: "La humanidad está biológicamente programada para la autodestrucción.", answer: 'p' },
+    { text: "La educación solo reproduce las desigualdades sociales existentes.", answer: 'r' },
+    { text: "La mayoría de las decisiones importantes en tu vida están influenciadas por factores fuera de tu control.", answer: 'r' },
+    { text: "La tecnología ha creado más problemas de los que ha resuelto.", answer: 'r' },
+    { text: "La democracia es una ilusión que oculta el verdadero poder de las élites.", answer: 'r' },
+    { text: "La naturaleza humana es fundamentalmente violenta y competitiva.", answer: 'r' },
+    { text: "Nacer es el primer paso hacia una serie interminable de pérdidas.", answer: 'p' },
+    { text: "La compasión es una debilidad evolutiva que será explotada.", answer: 'p' },
+    { text: "El universo es indiferente a tu sufrimiento o felicidad.", answer: 'p' },
+    { text: "Todas las instituciones humanas están corruptas en su núcleo.", answer: 'p' },
+    { text: "La libertad de elección es una ilusión en un mundo determinado por causas y efectos.", answer: 'p' }
+];
         
         // Se elimina la constante 'PHRASES' única
 
